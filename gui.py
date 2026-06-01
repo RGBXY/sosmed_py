@@ -8,10 +8,11 @@ bg_secondary = "#5759BB"
 bg_white = "#ffffff"
 
 class LoginApp(tk.Frame):
-    def __init__(self, parent):
+    def __init__(self, parent, login_success):
         super().__init__(parent)   
         self.auth = Auth() 
         self.user = None
+        self.login_success = login_success
         self.config(bg=bg_main)
         
         def btn_on_enter(e):
@@ -34,6 +35,8 @@ class LoginApp(tk.Frame):
                 self.user = res["data"]
                 print(self.user.username)
                 
+                self.login_success(self.user)
+                
         form_frame = tk.Frame(self, bg=bg_white)
         form_frame.pack(expand=True, ipadx=24)
         
@@ -51,3 +54,21 @@ class LoginApp(tk.Frame):
         btn_login.pack(pady=(30))
         btn_login.bind("<Enter>", btn_on_enter)
         btn_login.bind("<Leave>", btn_on_leave)
+        
+class Home(tk.Frame):
+    def __init__(self, parent, current_user):
+        super().__init__(parent)
+        
+        tk.Label(self, text=f"Welcome to Home screen {current_user.username}").pack()
+        
+class Dashboard_moderator(tk.Frame):
+    def __init__(self, parent, current_user):
+        super().__init__(parent)
+        
+        tk.Label(self, text=f"Welcome to Dashboard Moderator Screen {current_user.username}").pack()
+        
+class Dashboard_admin(tk.Frame):
+    def __init__(self, parent, current_user):
+        super().__init__(parent)
+        
+        tk.Label(self, text=f"Welcome to Dashboard Admin Screen {current_user.username}").pack()
