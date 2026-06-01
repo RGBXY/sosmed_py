@@ -2,17 +2,7 @@ from model import User
 from data import get_user_auth
 
 class Auth:
-    def login(self, username, password):
-        res = get_user_auth(username)
-        
-        if res:            
-            data = User.convert(res)
-            return {
-                "status" : "Success",
-                "message" : ("Success", "Login Berhasil"),
-                "data" : data
-            }
-        
+    def login(self, username, password):        
         if not len(username) and not len(password):
             return {
                 "status" : "Error",
@@ -25,10 +15,21 @@ class Auth:
                 "message" : ("Error", "Password harus 8 karakter")
             }
             
-        if res and res.password == password.lower():
+        res = get_user_auth(username)
+        
+        if not res:
+            return {
+                "status" : "Error",
+                "message" : ("Error", "Username atau password salah")
+            }
+
+        user_data = User.convert(res)
+            
+        if user_data.password == password.lower():
             return {
                 "status" : "Success",
-                "message" : ("Success", "Login Berhasil")
+                "message" : ("Success", "Login Berhasil"),
+                "data" : user_data
             }
         else:
             return {
