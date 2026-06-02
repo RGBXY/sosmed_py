@@ -1,8 +1,10 @@
 import tkinter as tk
 from tkinter import messagebox, ttk
 from logic import Auth
+
 # Color
 bg_main = "#EFF2F7"
+bg_ = "#EFF2F7"
 bg_primary = "#6C6FF1"
 bg_secondary = "#5759BB"
 bg_white = "#ffffff"
@@ -39,7 +41,7 @@ class LoginApp(tk.Frame):
                 
         form_frame = tk.Frame(self, bg=bg_white)
         form_frame.pack(expand=True, ipadx=24)
-        
+            
         tk.Label(form_frame, text="Login to Hubble", font=("Poppins", 20), bg=bg_white).pack(pady=(20))
         
         tk.Label(form_frame, text="Username", font=("Poppins", 8), bg=bg_white).pack(anchor="w", padx=20)
@@ -57,18 +59,62 @@ class LoginApp(tk.Frame):
         
 class Home(tk.Frame):
     def __init__(self, parent, current_user):
-        super().__init__(parent)
+        super().__init__(parent)        
+        sidebar_frame = tk.Frame(self, width=320, bg=bg_white)
+        sidebar_frame.pack(side="left", fill="y")
+        sidebar_frame.pack_propagate(False)        
         
-        tk.Label(self, text=f"Welcome to Home screen {current_user.username}").pack()
+        main_frame = tk.Frame(self, bg=bg_main)
+        main_frame.pack(side="left", expand=True, fill="both")
         
+        # Main GUI
+        tk.Label(main_frame, text=f"Welcome to Home screen {current_user.username}", font=("Poppins", 14, "bold"), bg=bg_white, height=4).pack(fill="x")
+        
+        # Sidebar GUI
+        nav_header_frame = tk.Frame(sidebar_frame, padx=20, pady=20,bg=bg_white)
+        nav_header_frame.pack(fill="x")
+        
+        tk.Label(nav_header_frame, text=current_user.username, bg=bg_white, font=("Poppins", 12, "bold")).pack(anchor="w")
+        tk.Label(nav_header_frame, text=current_user.role, bg=bg_white).pack(anchor="w")  
+
 class Dashboard_moderator(tk.Frame):
     def __init__(self, parent, current_user):
         super().__init__(parent)
         
-        tk.Label(self, text=f"Welcome to Dashboard Moderator Screen {current_user.username}").pack()
+        sidebar_frame = tk.Frame(self, width=320, bg=bg_white)
+        sidebar_frame.pack(side="left", fill="y")
+        sidebar_frame.pack_propagate(False)        
         
+        main_frame = tk.Frame(self, bg=bg_main)
+        main_frame.pack(side="left", expand=True, fill="both")
+        
+        # Main GUI
+        tk.Label(main_frame, text=f"Welcome to Dashboard Moderator Screen {current_user.username}", font=("Poppins", 14, "bold"), bg=bg_white, height=4).pack(fill="x")
+        
+        # Sidebar GUI
+        nav_header_frame = tk.Frame(sidebar_frame, padx=20, pady=20,bg=bg_white)
+        nav_header_frame.pack(fill="x")
+        
+        tk.Label(nav_header_frame, text=current_user.username, bg=bg_white, font=("Poppins", 12, "bold")).pack(anchor="w")
+        tk.Label(nav_header_frame, text=current_user.role, bg=bg_white).pack(anchor="w")  
+                
 class Dashboard_admin(tk.Frame):
     def __init__(self, parent, current_user):
         super().__init__(parent)
         
-        tk.Label(self, text=f"Welcome to Dashboard Admin Screen {current_user.username}").pack()
+        sidebar_frame = tk.Frame(self, width=320, bg=bg_white)
+        sidebar_frame.pack(side="left", fill="y")
+        sidebar_frame.pack_propagate(False)        
+        
+        main_frame = tk.Frame(self, bg=bg_main)
+        main_frame.pack(side="left", expand=True, fill="both")
+        
+        # Main GUI
+        tk.Label(main_frame, text=f"Welcome to Dashboard Admin Screen {current_user.username}", font=("Poppins", 14, "bold"), bg=bg_white, height=4).pack(fill="x")
+        
+        # Sidebar GUI
+        nav_header_frame = tk.Frame(sidebar_frame, padx=20, pady=20,bg=bg_white)
+        nav_header_frame.pack(fill="x")
+        
+        tk.Label(nav_header_frame, text=current_user.username, bg=bg_white, font=("Poppins", 12, "bold")).pack(anchor="w")
+        tk.Label(nav_header_frame, text=current_user.role, bg=bg_white).pack(anchor="w")  

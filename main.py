@@ -5,7 +5,7 @@ from gui import LoginApp, Home, Dashboard_admin, Dashboard_moderator
 class Main(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.geometry("1200x800")
+        self.state("zoomed")
         self.title("Social Media")
         init_db()
         
@@ -20,11 +20,11 @@ class Main(tk.Tk):
         self.current_user = user
         
         if user.role == "user":
-            Home(self, current_user=self.current_user).pack()
+            Home(self, current_user=self.current_user).pack(expand=True, fill="both")
         elif user.role == "moderator":
-            Dashboard_moderator(self, current_user=self.current_user).pack()
+            Dashboard_moderator(self, current_user=self.current_user).pack(expand=True, fill="both")
         elif user.role == "admin":
-            Dashboard_admin(self, current_user=self.current_user).pack()
+            Dashboard_admin(self, current_user=self.current_user).pack(expand=True, fill="both")
         
         self.login.destroy()
         

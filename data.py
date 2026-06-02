@@ -33,7 +33,7 @@ def init_db():
         
     conn.close()
 
-def get_user_auth(username):
+def login_user_auth(username):
     conn = get_db()
     res = conn.execute("SELECT * FROM users WHERE username=?", (username,)).fetchone()
     conn.close()

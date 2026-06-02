@@ -1,5 +1,5 @@
 from model import User
-from data import get_user_auth
+from data import login_user_auth
 
 class Auth:
     def login(self, username, password):        
@@ -15,7 +15,7 @@ class Auth:
                 "message" : ("Error", "Password harus 8 karakter")
             }
             
-        res = get_user_auth(username)
+        res = login_user_auth(username)
         
         if not res:
             return {
@@ -36,6 +36,7 @@ class Auth:
                 "status" : "Error",
                 "message" : ("Error", "Username atau password salah")
             }
+        
        
         
         
