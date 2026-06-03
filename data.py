@@ -26,7 +26,7 @@ def init_db():
         ]
         
         conn.executemany("""
-            INSERT INTO users (username, password, role) 
+            INSERT INTO users (username, password, role)    
             VALUES (?, ?, ?)
         """, data_users)
         conn.commit()
