@@ -38,3 +38,25 @@ def login_user_auth(username):
     res = conn.execute("SELECT * FROM users WHERE username=?", (username,)).fetchone()
     conn.close()
     return res
+
+def register_user_auth(username, password):
+    conn = get_db()
+
+    try:
+        check = conn.execute("SELECT 1 FROM users WHERE username=?", (username,)).fetchone()
+
+        if check:
+            conn.close()
+            return "username_exist"
+    
+        conn.execute("INSERT INTO users (username, password, role) VALUES (?,?,?)", (username, password, "user"))
+        conn.commit()
+        
+        user_baru = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+        return user_baru
+    except Exception:
+        print(f"Error: {Exception}")
+    finally:
+        conn.close()
+
+    

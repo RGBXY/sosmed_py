@@ -11,6 +11,15 @@ bg_white     = "#ffffff"
 text_muted   = "#9496B0"
 text_dark    = "#1C1D3A"
 border_col   = "#E2E5F5"
+
+# Logout Fnc for Button
+def logout(parent):
+    cheack = messagebox.askyesno("Keluar", "Apakah yakin ingin keluar?")
+    
+    if cheack:
+        parent.master.logout()
+    else:
+        return
  
 # Sidebar
 def sidebar(parent, current_user, nav_items):
@@ -39,6 +48,14 @@ def sidebar(parent, current_user, nav_items):
                   relief="flat", font=("Poppins", 9),
                   anchor="w", padx=12, pady=8, cursor="hand2"
         ).pack(fill="x", padx=12, pady=2)
+
+    tk.Button(sidebar_frame, text="  Logout",
+                  command=lambda:logout(parent),
+                  bg=bg_primary if is_active else bg_white,
+                  fg=bg_white   if is_active else text_dark,
+                  relief="flat", font=("Poppins", 9),
+                  anchor="w", padx=12, pady=8, cursor="hand2"
+        ).pack(fill="x", padx=12, pady=2)
  
     return sidebar_frame
  
@@ -51,13 +68,14 @@ def main_header(parent, current_user, screen_name):
     tk.Frame(main_frame, height=2, bg=bg_primary).pack(fill="x")
  
     return main_frame
+
 # Login Frame
 class LoginApp(tk.Frame):
-    def __init__(self, parent, login_success):
+    def __init__(self, parent, auth_success):
         super().__init__(parent)   
         self.auth = Auth() 
         self.user = None
-        self.login_success = login_success
+        self.auth_success = auth_success
         self.config(bg=bg_main)
         
         def btn_on_enter(e):
@@ -80,7 +98,13 @@ class LoginApp(tk.Frame):
                 self.user = res["data"]
                 print(self.user.username)
                 
-                self.login_success(self.user)
+                self.auth_success(self.user)
+
+        def go_register():
+            self.master.switch_frame(
+                RegisterApp, 
+                auth_success=self.master.auth_success
+            )
                 
         form_frame = tk.Frame(self, bg=bg_white)
         form_frame.pack(expand=True, ipadx=24)
@@ -99,6 +123,74 @@ class LoginApp(tk.Frame):
         btn_login.pack(pady=(30))
         btn_login.bind("<Enter>", btn_on_enter)
         btn_login.bind("<Leave>", btn_on_leave)
+
+        btn_change_register = tk.Button(form_frame, command=go_register, text="Register", relief="flat")
+        btn_change_register.pack(pady=(0, 30))
+
+# Register Frame
+class RegisterApp(tk.Frame):
+    def __init__(self, parent, auth_success):
+        super().__init__(parent)
+
+        self.auth = Auth() 
+        self.user = None
+        self.auth_success = auth_success
+        self.config(bg=bg_main)
+        
+        def btn_on_enter(e):
+            btn_login.config(bg=bg_secondary)
+            
+        def btn_on_leave(e):
+            btn_login.config(bg=bg_primary)
+            
+        def register():
+            ent_username = self.ent_name.get()
+            ent_password = self.ent_password.get()
+            ent_confirm_password = self.ent_confirm_password.get()
+            res = self.auth.register(ent_username, ent_password, ent_confirm_password)
+                        
+            if res["status"] == "Error":
+                messagebox.showerror(res["message"][0], res["message"][1])
+                return
+            
+            if res["status"] == "Success":
+                messagebox.showinfo(res["message"][0], res["message"][1])
+                self.user = res["data"]
+                print(self.user.username)
+                
+                self.auth_success(self.user)
+
+        def go_login():
+            self.master.switch_frame(
+                LoginApp, 
+                auth_success=self.master.auth_success
+            )
+                
+        form_frame = tk.Frame(self, bg=bg_white)
+        form_frame.pack(expand=True, ipadx=24)
+            
+        tk.Label(form_frame, text="Register to Hubble", font=("Poppins", 20), bg=bg_white).pack(pady=(20))
+        
+        tk.Label(form_frame, text="Username", font=("Poppins", 8), bg=bg_white).pack(anchor="w", padx=20)
+        self.ent_name = tk.Entry(form_frame, width=45, bd=1, relief="solid")
+        self.ent_name.pack(ipady=4)
+        
+        tk.Label(form_frame, text="Password", font=("Poppins", 8), bg=bg_white).pack(anchor="w", pady=(10, 0), padx=20)
+        self.ent_password = tk.Entry(form_frame, show="*", width=45, bd=1, relief="solid")
+        self.ent_password.pack(ipady=4)
+
+        tk.Label(form_frame, text="Confirm Password", font=("Poppins", 8), bg=bg_white).pack(anchor="w", pady=(10, 0), padx=20)
+        self.ent_confirm_password = tk.Entry(form_frame, show="*", width=45, bd=1, relief="solid")
+        self.ent_confirm_password.pack(ipady=4)
+        
+        btn_login = tk.Button(form_frame, text="REGISTER", command=register, width=38, bg=bg_primary, foreground=bg_white, height=2, font=("Poppins", 9, "bold"))
+        btn_login.pack(pady=(30))
+        btn_login.bind("<Enter>", btn_on_enter)
+        btn_login.bind("<Leave>", btn_on_leave)
+
+        btn_change_login = tk.Button(form_frame, command=go_login, text="Login", relief="flat")
+        btn_change_login.pack(pady=(0, 30))
+
         
 # Home Frame   
 class Home(tk.Frame):

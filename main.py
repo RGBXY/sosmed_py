@@ -1,6 +1,6 @@
 import tkinter as tk
-from data import init_db
-from gui import LoginApp, Home, Dashboard_admin, Dashboard_moderator, Comunity
+from data import init_db, register_user_auth
+from gui import LoginApp, Home, Dashboard_admin, Dashboard_moderator, Comunity, RegisterApp
 
 class Main(tk.Tk):
     def __init__(self):
@@ -23,10 +23,14 @@ class Main(tk.Tk):
         
     # Login GUI Function
     def open_login(self):        
-        self.switch_frame(LoginApp, login_success=self.login_success)
+        self.switch_frame(LoginApp, auth_success=self.auth_success)
+
+    def logout(self):
+        self.current_user = None
+        self.switch_frame(LoginApp, auth_success=self.auth_success)
                 
-    # Callback for Login
-    def login_success(self, user):
+    # Callback for Register and Login
+    def auth_success(self, user):
         self.current_user = user
 
         if user.role == "user":
@@ -37,5 +41,7 @@ class Main(tk.Tk):
 
         elif user.role == "admin":
             self.switch_frame(Dashboard_admin, current_user=self.current_user)        
-                    
+
+    
+    register_user_auth("dodi", "haidsh")
 Main().mainloop()
