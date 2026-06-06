@@ -1,6 +1,6 @@
 import tkinter as tk
 from data import init_db, register_user_auth
-from gui import LoginApp, Home, Dashboard_admin, Dashboard_moderator, Comunity, RegisterApp
+from gui import LoginApp, Home, Dashboard_admin, Dashboard_moderator, Comunity, RegisterApp, User_profile, Change_Profile_Data
 
 class Main(tk.Tk):
     def __init__(self):

@@ -1,5 +1,5 @@
 from model import User
-from data import login_user_auth, register_user_auth
+from data import login_user_auth, register_user_auth, change_username, delete_user
 
 class Auth:
     def login(self, username, password):        
@@ -71,9 +71,53 @@ class Auth:
             "message" : ("Success", "Register Berhasil"),
             "data" : user_data
         }
-       
-
+    
+class User_Profile:
+    def change_username(self, current_username, new_username):
+        if not len(new_username):
+            return{
+                "status": "Error",
+                "message": ("Error","Data username baru tidak boleh kosong")
+            }
         
+        res = change_username(current_username, new_username)
+        
+        if res == "username_exist":
+            return{
+                "status": "Error",
+                "message": ("Error","Data username baru tidak telah diambil, silahkan pilih username lain")
+            }
+        
+        user_data = User.convert(res)
+
+        return{
+            "status": "Success",
+            "message": ("Success", "Username berhasil diganti"),
+            "data": user_data
+        }
+     
+    def delete_user(self, id):
+        if not id:
+            return{
+                "status": "Error",
+                "message": ("Error","Data user tidak dapat ditermukan")
+            }
+        
+        res = delete_user(id)
+
+        if res == True:
+            return{
+                "status": "Success",
+                "message": ("Success", "Akun berhasil di hapus"),
+            }
+        else:
+            return{
+                "status": "Error",
+                "message": ("Error","Akun gagal dihapus")
+            }
+        
+
+     
        
         
         

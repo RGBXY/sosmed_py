@@ -33,6 +33,14 @@ def init_db():
         
     conn.close()
 
+def cheack_if_user_exist(conn, username):
+    check = conn.execute("SELECT 1 FROM users WHERE username=?", (username,)).fetchone()
+    
+    if check:
+        return "username_exist"
+    
+    return False
+
 def login_user_auth(username):
     conn = get_db()
     res = conn.execute("SELECT * FROM users WHERE username=?", (username,)).fetchone()
@@ -43,11 +51,11 @@ def register_user_auth(username, password):
     conn = get_db()
 
     try:
-        check = conn.execute("SELECT 1 FROM users WHERE username=?", (username,)).fetchone()
+        check = cheack_if_user_exist(conn, username) 
 
-        if check:
+        if check == "username_exist":
             conn.close()
-            return "username_exist"
+            return check
     
         conn.execute("INSERT INTO users (username, password, role) VALUES (?,?,?)", (username, password, "user"))
         conn.commit()
@@ -59,4 +67,30 @@ def register_user_auth(username, password):
     finally:
         conn.close()
 
+def change_username(curent_username, new_userame):
+    conn = get_db()
+
+    check = cheack_if_user_exist(conn, new_userame) 
+
+    if check == "username_exist":
+        conn.close()
+        return check
+
+    conn.execute("UPDATE users SET username=? WHERE username=?", (new_userame, curent_username))
+    conn.commit()
+
+    data_user = conn.execute("SELECT * FROM users WHERE username = ?", (new_userame,)).fetchone()
+
+    return data_user
+
+def delete_user(id):
+    conn = get_db()
+
+    conn.execute("DELETE FROM users WHERE id=?", (id,))
+    conn.commit()
+
+    return True
+
+    
+    
     
