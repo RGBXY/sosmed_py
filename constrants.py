@@ -1,0 +1,8 @@
+bg_main      = "#EFF2F7"
+bg_          = "#EFF2F7"
+bg_primary   = "#6C6FF1"
+bg_secondary = "#5759BB"
+bg_white     = "#ffffff"
+text_muted   = "#9496B0"
+text_dark    = "#1C1D3A"
+border_col   = "#E2E5F5"
