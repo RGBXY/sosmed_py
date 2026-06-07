@@ -45,6 +45,4 @@ class Main(tk.Tk):
         elif user.role == "admin":
             self.switch_frame(DashboardAdminFrame, current_user=self.current_user)        
 
-    
-    register_user_auth("dodi", "haidsh")
 Main().mainloop()

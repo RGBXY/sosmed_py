@@ -25,7 +25,7 @@ def sidebar(parent, current_user, nav_items):
     tk.Label(nav_header_frame, text=current_user.role,
              bg=bg_white, fg=text_muted, font=("Poppins", 8)).pack(anchor="w")
  
-    tk.Frame(sidebar_frame, height=1, bg=border_col).pack(fill="x", padx=16, pady=4)
+    tk.Frame(sidebar_frame, height=1, bg=border_col).pack(fill="both", padx=16, pady=4)
     
     for i in nav_items:
         is_active = i.get("active", False)
@@ -37,12 +37,11 @@ def sidebar(parent, current_user, nav_items):
                   anchor="w", padx=12, pady=8, cursor="hand2"
         ).pack(fill="x", padx=12, pady=2)
 
-    tk.Button(sidebar_frame, text="  Logout",
+    tk.Button(sidebar_frame, text=" LOGOUT",
                   command=lambda:logout(parent),
-                  bg=bg_primary if is_active else bg_white,
-                  fg=bg_white   if is_active else text_dark,
+                  bg=bg_primary, fg=bg_white,
                   relief="flat", font=("Poppins", 9),
                   anchor="w", padx=12, pady=8, cursor="hand2"
-        ).pack(fill="x", padx=12, pady=2, anchor="s")
+        ).pack(fill="x", padx=12, pady=10, anchor="s", side="bottom")
  
     return sidebar_frame

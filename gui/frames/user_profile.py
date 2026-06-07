@@ -4,7 +4,7 @@ from tkinter import messagebox
 from constrants import *
 
 # Components
-from gui.components.sidebar import sidebar
+from gui.utils.navigation import render_role_sidebar
 from gui.components.header import main_header
 
 # Logic
@@ -17,40 +17,8 @@ class UserProfileFrame(tk.Frame):
         self.config(bg=bg_main)
         self.change_user_profile = User_Profile()
 
-        
-        # 1. Navigasi Fungsi Sidebar
-        def go_home():
-            from gui.frames.home import HomeFrame
-
-            self.master.switch_frame(
-                HomeFrame,
-                current_user=self.master.current_user
-            )
-             
-        def go_activity():
-            from gui.frames.comunity import ComunityFrame
-            
-            self.master.switch_frame(
-                ComunityFrame,
-                current_user=self.master.current_user
-            )
-        
-        # Navigasi Menu Sidebar
-        nav_items = [
-            {
-                "title": "Home",
-                "comand": go_home,
-                "active": False
-            },
-            {
-                "title": "Comunity",
-                "comand": go_activity,
-                "active": False
-            }
-        ]
-        
-        # 2. Render Komponen Global (Sidebar & Header)
-        sidebar(self, current_user, nav_items)
+        render_role_sidebar(self, current_user, "")
+       
         main_header(self, current_user, "User Profile")
         
         # 3. Kontainer Utama Konten (Mengisi sisa area kanan)
@@ -143,7 +111,7 @@ class UserProfileFrame(tk.Frame):
                 user_id = current_user.id
 
                 print(user_id)
-                res = self.change_user_profile.delete_user(user_id)
+                res = self.change_user_profile.delete_user_logic(user_id)
 
                 if res["status"] == "Error":
                     messagebox.showerror(res["message"][0], res["message"][1])

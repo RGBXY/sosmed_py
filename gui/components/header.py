@@ -11,6 +11,14 @@ def main_header(parent, current_user, screen_name):
     content_frame = tk.Frame(main_frame, bg=bg_white)
     content_frame.pack(fill="x", side="top")
 
+    def go_profile():
+        from gui.frames.user_profile import UserProfileFrame
+
+        parent.master.switch_frame(
+        UserProfileFrame,
+        current_user=current_user
+    )
+
     # KIRI: Screen Name
     tk.Label(
         content_frame, 
@@ -30,7 +38,8 @@ def main_header(parent, current_user, screen_name):
         bg=bg_white, 
         fg=text_dark,
         padx=20,
-        relief="flat"
+        relief="flat",
+        command=go_profile
     ).pack(side="right") # Tarik ke kanan mentok (Ini kunci "space-between"-nya!)
 
     # 2. Garis pembagi (Border bawah/Line) ditaruh di bawah content_frame

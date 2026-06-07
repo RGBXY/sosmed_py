@@ -20,7 +20,7 @@ class LoginFrame(tk.Frame):
         def login():
             ent_username = self.ent_name.get()
             ent_password = self.ent_password.get()
-            res = self.auth.login(ent_username, ent_password)
+            res = self.auth.login_logic(ent_username, ent_password)
                         
             if res["status"] == "Error":
                 messagebox.showerror(res["message"][0], res["message"][1])

@@ -12,6 +12,13 @@ class DashboardAdminFrame(tk.Frame):
         super().__init__(parent)
         
         # Navigate to Home Screen
+        def go_home():
+            from gui.frames.home import HomeFrame
+            self.master.switch_frame(
+                HomeFrame,
+                current_user=self.master.current_user
+        )
+            
         def go_dashboard_admin():
             self.master.switch_frame(
             DashboardAdminFrame,
@@ -28,6 +35,11 @@ class DashboardAdminFrame(tk.Frame):
         )
              
         nav_items = [
+            {
+                "title": "Home",
+                "comand": go_home,
+                "active": False
+            },
             {
                 "title": "Dashboard",
                 "comand": go_dashboard_admin,

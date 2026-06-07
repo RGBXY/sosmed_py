@@ -22,7 +22,7 @@ class RegisterFrame(tk.Frame):
             ent_username = self.ent_name.get()
             ent_password = self.ent_password.get()
             ent_confirm_password = self.ent_confirm_password.get()
-            res = self.auth.register(ent_username, ent_password, ent_confirm_password)
+            res = self.auth.register_logic(ent_username, ent_password, ent_confirm_password)
                         
             if res["status"] == "Error":
                 messagebox.showerror(res["message"][0], res["message"][1])

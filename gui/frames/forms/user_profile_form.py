@@ -58,7 +58,7 @@ class FormUserProfileFrame(tk.Frame):
             current_username = current_user.username
             new_username = self.ent_new_username.get()
 
-            res = self.change_user_profile.change_username(current_username, new_username)
+            res = self.change_user_profile.change_username_logic(current_username, new_username)
 
             print(res)
 

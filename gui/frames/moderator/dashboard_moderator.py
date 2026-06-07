@@ -16,13 +16,21 @@ class DashboardModerator(tk.Frame):
             current_user=self.master.current_user
         )
              
-        # Navigate to Activity Screen
-        def go_activity():
-            from gui.frames.comunity import ComunityFrame
+        def go_dashboard():
+            from gui.frames.moderator.dashboard_moderator import DashboardModerator
+
             self.master.switch_frame(
-            ComunityFrame,
-            current_user=self.master.current_user
-        )
+                DashboardModerator,
+                current_user=self.master.current_user
+            )
+
+        def go_comunity():
+            from gui.frames.moderator.comunity import CommunityFrame
+
+            self.master.switch_frame(
+                CommunityFrame,
+                current_user=current_user
+            )
         
         nav_items = [
             {
@@ -31,8 +39,13 @@ class DashboardModerator(tk.Frame):
                 "active": False
             },
             {
+                "title": "Dashboard",
+                "comand": go_dashboard,
+                "active": True
+            },
+            {
                 "title": "Comunity",
-                "comand": go_activity,
+                "comand": go_comunity,
                 "active": False
             }
         ]
