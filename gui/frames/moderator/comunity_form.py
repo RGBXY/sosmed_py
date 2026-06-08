@@ -13,9 +13,6 @@ class CommunityManagementFrame(tk.Frame):
         self.comunity_logic = Comunity_Logic()
         self.communities_data = self.comunity_logic.get_comunity_logic()
 
-        # ----------------------------------------------------
-        # 1. NAVIGASI FUNGSI SIDEBAR
-        # ----------------------------------------------------
         def go_home():
             from gui.frames.home import HomeFrame
             self.master.switch_frame(HomeFrame, current_user=self.master.current_user)
@@ -25,7 +22,6 @@ class CommunityManagementFrame(tk.Frame):
             self.master.switch_frame(DashboardModerator, current_user=self.master.current_user)
 
         def go_comunity_form():
-            # Karena sudah digabung, menu ini akan merefresh halaman yang sama
             self.master.switch_frame(CommunityManagementFrame, current_user=self.master.current_user)
         
         nav_items = [
@@ -37,9 +33,7 @@ class CommunityManagementFrame(tk.Frame):
         sidebar(self, current_user, nav_items)
         main_header(self, current_user, "Manajemen Komunitas")
 
-        # ----------------------------------------------------
-        # 2. WADAH UTAMA KANAN (Scrollable / Content Area)
-        # ----------------------------------------------------
+        # Content Area
         content_area = tk.Frame(self, bg=bg_main, padx=30, pady=20)
         content_area.pack(side="left", fill="both", expand=True)
 
@@ -52,9 +46,6 @@ class CommunityManagementFrame(tk.Frame):
             fg=text_dark
         ).pack(anchor="w", pady=(0, 15))
 
-        # ====================================================
-        # BAGIAN A: TABEL DAFTAR KOMUNITAS
-        # ====================================================
         table_container = tk.Frame(
             content_area, 
             bg=bg_white, 
@@ -95,7 +86,6 @@ class CommunityManagementFrame(tk.Frame):
         self.scrollbar.pack(side="right", fill="y")
         self.tree.pack(side="left", fill="both", expand=True)
 
-        # Tombol Aksi Tabel (Edit & Hapus)
         action_frame = tk.Frame(content_area, bg=bg_main)
         action_frame.pack(fill="x", pady=(0, 20))
 
@@ -113,9 +103,6 @@ class CommunityManagementFrame(tk.Frame):
         )
         btn_delete.pack(side="left")
 
-        # ====================================================
-        # BAGIAN B: FORM BUAT KOMUNITAS BARU
-        # ====================================================
         form_card = tk.Frame(
             content_area, 
             bg=bg_white, 
@@ -134,20 +121,16 @@ class CommunityManagementFrame(tk.Frame):
             fg=text_dark
         ).pack(anchor="w", pady=(0, 15))
         
-        # Input Nama Komunitas
         tk.Label(form_card, text="Nama Komunitas", font=("Poppins", 9), bg=bg_white, fg=text_dark).pack(anchor="w")
         self.ent_name = tk.Entry(form_card, font=("Poppins", 10), bg=bg_white, fg="black", width=40)
         self.ent_name.pack(anchor="w", pady=(5, 15))
 
-        # Input Deskripsi
         tk.Label(form_card, text="Deskripsi Komunitas", font=("Poppins", 9), bg=bg_white, fg=text_dark).pack(anchor="w")
         self.ent_description = tk.Text(form_card, font=("Poppins", 10), bg=bg_white, fg="black", height=4, width=50)
         self.ent_description.pack(anchor="w", pady=(5, 20))
         
-        # Separator Line
         tk.Frame(form_card, height=1, bg=border_col).pack(fill="x", pady=(0, 15))
         
-        # Tombol Submit Form
         def create_comunity_action():
             user_id = current_user.id
             name = self.ent_name.get().strip()
@@ -194,24 +177,18 @@ class CommunityManagementFrame(tk.Frame):
         )
         btn_back.pack(side="left")
 
-        # Load Data Pertama Kali ke Tabel
         self.load_data(self.communities_data)
 
-    # ----------------------------------------------------
-    # CORE LOGIC FUNCTIONS
-    # ----------------------------------------------------
+    # Logic
     def load_data(self, communities_data):
-        """Membersihkan tabel dan memasukkan data baru"""
         for item in self.tree.get_children():
             self.tree.delete(item)
             
         if communities_data:
             for row in communities_data:
-                # row format: (id, user_id, name, description, created_at)
                 self.tree.insert("", "end", values=(row[0], row[2], row[3]))
             
     def get_selected_community_id(self):
-        """Ambil ID komunitas dari baris tabel yang diklik"""
         selected_item = self.tree.selection()
         if selected_item:
             return self.tree.item(selected_item[0])['values'][0]
@@ -230,11 +207,8 @@ class CommunityManagementFrame(tk.Frame):
             messagebox.showwarning("Peringatan", "Silahkan pilih komunitas dari tabel untuk dihapus!")
             return
         
-        tanya = messagebox.askyesno("Konfirmasi Hapus", "Apakah Anda yakin ingin menghapus komunitas ini secara permanen?")
-        if tanya:
-            # Contoh eksekusi (buka blokir kodenya jika fungsi delete sudah siap di backend):
-            # self.comunity_logic.delete_comunity_logic(community_id)
+        user_res = messagebox.askyesno("Konfirmasi Hapus", "Apakah Anda yakin ingin menghapus komunitas ini secara permanen?")
+        if user_res:
             messagebox.showinfo("Sukses", "Komunitas berhasil dihapus!")
-            # Refresh tabel
             self.communities_data = self.comunity_logic.get_comunity_logic()
             self.load_data(self.communities_data)

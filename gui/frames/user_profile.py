@@ -21,11 +21,9 @@ class UserProfileFrame(tk.Frame):
        
         main_header(self, current_user, "User Profile")
         
-        # 3. Kontainer Utama Konten (Mengisi sisa area kanan)
         content_area = tk.Frame(self, bg=bg_main, padx=40, pady=40)
         content_area.pack(side="left", fill="both", expand=True)
         
-        # 4. Profile Card (Kotak Putih Modern)
         profile_card = tk.Frame(
             content_area, 
             bg=bg_white, 
@@ -34,14 +32,12 @@ class UserProfileFrame(tk.Frame):
             padx=30,
             pady=30
         )
-        profile_card.pack(anchor="nw", fill="x") # Batasi lebar card agar rapi
+        profile_card.pack(anchor="nw", fill="x") #
         
-        # Avatar Placeholder (Inisial nama user lingkaran / box)
         avatar_frame = tk.Frame(profile_card, bg=bg_primary, width=70, height=70)
         avatar_frame.pack(anchor="w", pady=(0, 15))
         avatar_frame.pack_propagate(False)
         
-        # Mengambil huruf pertama username untuk avatar
         initial_letter = current_user.username[0].upper() if current_user.username else "?"
         tk.Label(
             avatar_frame, 
@@ -51,7 +47,6 @@ class UserProfileFrame(tk.Frame):
             font=("Poppins", 24, "bold")
         ).pack(expand=True)
         
-        # Detail Informasi User
         tk.Label(
             profile_card, 
             text="Informasi Akun", 
@@ -60,7 +55,6 @@ class UserProfileFrame(tk.Frame):
             fg=text_dark
         ).pack(anchor="w", pady=(0, 10))
         
-        # Field: Username
         tk.Label(profile_card, text="Username", font=("Poppins", 9), bg=bg_white, fg=text_muted).pack(anchor="w")
         lbl_username = tk.Label(
             profile_card, 
@@ -71,25 +65,21 @@ class UserProfileFrame(tk.Frame):
         )
         lbl_username.pack(anchor="w", pady=(0, 15))
         
-        # Field: Role
         tk.Label(profile_card, text="Role Akses", font=("Poppins", 9), bg=bg_white, fg=text_muted).pack(anchor="w")
         lbl_role = tk.Label(
             profile_card, 
             text=current_user.role.upper(), 
             font=("Poppins", 10, "bold"), 
-            bg=border_col, # Efek badge background
+            bg=border_col, #
             fg=text_dark,
             padx=10,
             pady=2
         )
         lbl_role.pack(anchor="w", pady=(0, 20))
         
-        # Pembatas Garis Halus
         tk.Frame(profile_card, height=1, bg=border_col).pack(fill="x", pady=(0, 20))
         
-        # Tombol Aksi (Contoh: Kembali ke Dashboard)
         def back_to_dashboard():
-            # Mengarahkan user berdasarkan role-nya masing-masing
             if current_user.role.lower() == "admin":
                 from gui.frames.admin.dashboard_admin import DashboardAdminFrame
                 self.master.switch_frame(DashboardAdminFrame, current_user=current_user)
@@ -165,6 +155,5 @@ class UserProfileFrame(tk.Frame):
         )
         btn_hapus.pack(anchor="w")
         
-        # Efek Hover Tombol
         btn_back.bind("<Enter>", lambda e: btn_back.config(bg=bg_secondary))
         btn_back.bind("<Leave>", lambda e: btn_back.config(bg=bg_primary))

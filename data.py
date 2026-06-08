@@ -206,23 +206,31 @@ def create_post(user_id, comunity_id, content):
     conn.close()
     return True
 
-def get_post():
+def get_post(current_user_id):
     conn = get_db()
     
     data_posts = conn.execute("""
         SELECT 
-        posts.id, 
-        posts.content, 
-        posts.created_at, 
-        users.username AS username, 
-        users.role AS user_role,
-        comunities.name AS comunity_name
-                              
+            posts.id, 
+            posts.content, 
+            posts.created_at, 
+            users.username AS username, 
+            users.role AS user_role,
+            comunities.name AS comunity_name,
+            
+            COUNT(likes.post_id) AS total_likes,
+            MAX(CASE WHEN likes.user_id = ? THEN 1 ELSE 0 END) AS is_liked_by_me
+                               
         FROM posts
         INNER JOIN users ON posts.user_id = users.id
         INNER JOIN comunities ON posts.comunity_id = comunities.id
+        
+        LEFT JOIN likes ON posts.id = likes.post_id
+        
+        GROUP BY posts.id
+        
         ORDER BY posts.created_at DESC;
-    """).fetchmany(10)
+    """, (current_user_id, )).fetchmany(10)
 
     conn.close()
     return data_posts
@@ -249,4 +257,25 @@ def delete_post(id):
 
     conn.close
     return True
+
+# Like
+def like(user_id, post_id):
+    conn = get_db()
+    
+    res = conn.execute("SELECT 1 FROM likes WHERE user_id = ? AND post_id = ?", (user_id, post_id)).fetchone()
+    
+    if res:
+        conn.execute("DELETE FROM likes WHERE user_id = ? and post_id = ?", (user_id, post_id))
+        conn.commit()
+        
+        conn.close()
+        return "unlike"
+    else:
+        conn.execute("INSERT INTO likes (user_id, post_id) VALUES (?, ?)", (user_id, post_id))
+        conn.commit()
+        
+        conn.close()
+        return "like"
+
+
 

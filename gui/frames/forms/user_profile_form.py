@@ -11,7 +11,6 @@ class FormUserProfileFrame(tk.Frame):
         self.config(bg=bg_main)
         self.change_user_profile = User_Profile()
         
-        # 1. Navigasi Fungsi Sidebar
         def go_home():
             from gui.frames.home import HomeFrame
 
@@ -28,7 +27,6 @@ class FormUserProfileFrame(tk.Frame):
                 current_user=self.master.current_user
             )
         
-        # Navigasi Menu Sidebar
         nav_items = [
             {
                 "title": "Home",
@@ -42,7 +40,6 @@ class FormUserProfileFrame(tk.Frame):
             }
         ]
         
-        # 2. Render Komponen Global (Sidebar & Header)
         sidebar(self, current_user, nav_items)
         main_header(self, current_user, "User Profile")
 
@@ -72,11 +69,11 @@ class FormUserProfileFrame(tk.Frame):
 
             back_to_profile()
         
-        # 3. Kontainer Utama Konten (Mengisi sisa area kanan)
+        # Main Container
         content_area = tk.Frame(self, bg=bg_main, padx=40, pady=40)
         content_area.pack(side="left", fill="both", expand=True)
         
-        # 4. Profile Card (Kotak Putih Modern)
+        # Profile Card
         profile_card = tk.Frame(
             content_area, 
             bg=bg_white, 
@@ -85,9 +82,9 @@ class FormUserProfileFrame(tk.Frame):
             padx=30,
             pady=30
         )
-        profile_card.pack(anchor="nw", fill="x") # Batasi lebar card agar rapi
+        profile_card.pack(anchor="nw", fill="x") # 
         
-        # Detail Informasi User
+        # Detail User
         tk.Label(
             profile_card, 
             text="Ganti Username", 
@@ -96,16 +93,12 @@ class FormUserProfileFrame(tk.Frame):
             fg=text_dark
         ).pack(anchor="w", pady=(0, 10))
         
-        # Field: Role
         self.ent_new_username = tk.Entry(profile_card, font=("Poppins", 9), bg=bg_white, fg=text_muted)
         self.ent_new_username.pack(anchor="w", pady=(0, 20))
         
-        # Pembatas Garis Halus
         tk.Frame(profile_card, height=1, bg=border_col).pack(fill="x", pady=(0, 20))
         
-        # Tombol Aksi (Contoh: Kembali ke Dashboard)
         def back_to_dashboard():
-            # Mengarahkan user berdasarkan role-nya masing-masing
             if current_user.role.lower() == "admin":
                 from gui.frames.admin.dashboard_admin import DashboardAdminFrame
                 self.master.switch_frame(DashboardAdminFrame, current_user=current_user)
@@ -144,6 +137,5 @@ class FormUserProfileFrame(tk.Frame):
         )
         btn_submit.pack(anchor="w")
         
-        # Efek Hover Tombol
         btn_back.bind("<Enter>", lambda e: btn_back.config(bg=bg_secondary))
         btn_back.bind("<Leave>", lambda e: btn_back.config(bg=bg_primary))

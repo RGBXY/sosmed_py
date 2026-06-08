@@ -1,9 +1,39 @@
 import tkinter as tk
 from tkinter import messagebox
 from constrants import *
+from logic import Like_Logic
 
+def CreatePostCard(parent, post_data, current_user, on_delete_callback, edit_callback, on_liked):   
+    likes = Like_Logic()
+    
+    print(post_data.total_likes)
+    
+    initial_count = post_data.total_likes
+    already_liked = post_data.is_liked_by_me 
+    
+    if already_liked:
+        text_awal = f"❤️ {initial_count} Suka"
+        warna_awal = "#FF4D4D"
+    else:
+        text_awal = f"🤍 {initial_count} Suka"
+        warna_awal = text_muted
 
-def CreatePostCard(parent, post_data, current_user, on_delete_callback, edit_callback):   
+    def likes_logic():
+        user_id = current_user.id
+        post_id = post_data.id
+        
+        res = likes.like_logic(user_id, post_id)
+        
+        if res["status"] == "like":
+            btn_like.config(text=f"❤️ {initial_count} Suka", fg="#FF4D4D") 
+            on_liked()
+
+        elif res["status"] == "unlike":
+            btn_like.config(text=f"🤍 {initial_count} Suka", fg=text_muted)
+            on_liked()
+        
+        print(res)
+    
     # Main Card Container (Kotak Putih)
     card = tk.Frame(
         parent, 
@@ -15,15 +45,13 @@ def CreatePostCard(parent, post_data, current_user, on_delete_callback, edit_cal
     )
     card.pack(fill="x", pady=10, padx=20)
     
-    # ----------------------------------------------------
-    # 1. HEADER AREA (Avatar, Username, Role, Timestamp)
-    # ----------------------------------------------------
+    # Header
     header_frame = tk.Frame(card, bg=bg_white)
     header_frame.pack(fill="x")
     
     # Mini Avatar
     avatar_frame = tk.Frame(header_frame, bg=bg_primary, width=40, height=40)
-    avatar_frame.pack(side="left") # Ilustrasi margin
+    avatar_frame.pack(side="left")  #
     avatar_frame.pack(side="left")
     avatar_frame.pack_propagate(False)
     
@@ -36,11 +64,11 @@ def CreatePostCard(parent, post_data, current_user, on_delete_callback, edit_cal
         font=("Poppins", 12, "bold")
     ).pack(expand=True)
     
-    # User Info Container (Samping Avatar)
+    # User Info Container
     info_frame = tk.Frame(header_frame, bg=bg_white, padx=10)
     info_frame.pack(side="left", fill="y")
     
-    # Username & Role Badge (Horizontal)
+    # Username & Comunity Badge
     meta_frame = tk.Frame(info_frame, bg=bg_white)
     meta_frame.pack(anchor="w")
     
@@ -52,14 +80,13 @@ def CreatePostCard(parent, post_data, current_user, on_delete_callback, edit_cal
         fg=text_dark
     ).pack(side="left")
     
-    # Role Badge
-    role_color = bg_secondary
+    # Comunity Badge
     lbl_role = tk.Label(
         meta_frame, 
         text=post_data.comunity_name.upper(), 
         font=("Poppins", 7, "bold"), 
         bg=border_col, 
-        fg=role_color,
+        fg=bg_secondary,
         padx=6,
         pady=1
     )
@@ -74,13 +101,11 @@ def CreatePostCard(parent, post_data, current_user, on_delete_callback, edit_cal
         fg=text_muted
     ).pack(anchor="w")
     
-    # ----------------------------------------------------
-    # 2. BODY AREA (Konten Postingan)
-    # ----------------------------------------------------
+    # Body (Konten Postingan)
     body_frame = tk.Frame(card, bg=bg_white, pady=12)
     body_frame.pack(fill="x")
     
-    # Label Post Content (PENTING: wraplength di-set agar teks otomatis turun ke bawah)
+    # Label Post Content 
     lbl_content = tk.Label(
         body_frame, 
         text=post_data.content, 
@@ -89,33 +114,32 @@ def CreatePostCard(parent, post_data, current_user, on_delete_callback, edit_cal
         fg=text_dark,
         justify="left",
         anchor="w",
-        wraplength=600 # Sesuaikan dengan perkiraan lebar area content di aplikasi lu
+        wraplength=600 #
     )
     lbl_content.pack(fill="x", anchor="w")
     
     # Pembatas Garis Tipis sebelum masuk footer
     tk.Frame(card, height=1, bg=border_col).pack(fill="x", pady=(5, 10))
     
-    # ----------------------------------------------------
-    # 3. FOOTER AREA (Tombol Aksi)
-    # ----------------------------------------------------
+    # Footer
     footer_frame = tk.Frame(card, bg=bg_white)
     footer_frame.pack(fill="x")
     
-    # Tombol Like (Dummy)
+    # Tombol Like (Sekarang dinamis menggunakan text_awal dan warna_awal)
     btn_like = tk.Button(
         footer_frame, 
-        text="❤️ Suka", 
+        text=text_awal, 
         font=("Poppins", 9), 
         bg=bg_white, 
-        fg=text_muted,
+        fg=warna_awal,
         relief="flat",
         cursor="hand2",
-        activebackground=bg_white
+        activebackground=bg_white,
+        command=likes_logic
     )
     btn_like.pack(side="left", padx=(0, 15))
     
-    # Tombol Comment (Dummy)
+    # Tombol Comment
     btn_comment = tk.Button(
         footer_frame, 
         text="💬 Komentar", 
@@ -128,14 +152,14 @@ def CreatePostCard(parent, post_data, current_user, on_delete_callback, edit_cal
     )
     btn_comment.pack(side="left")
     
-    # TOMBOL HAPUS: Hanya muncul jika user yang login adalah pemilik post, ATAU user adalah Admin
+    # Tombol Hapus
     if current_user.username == post_data.username or current_user.role.lower() == "admin" or current_user.role.lower() == "moderator":
         btn_delete = tk.Button(
             footer_frame, 
             text="🗑️ Hapus", 
             font=("Poppins", 9), 
             bg=bg_white, 
-            fg="#FF4D4D", # Warna merah cerah untuk hapus
+            fg="#FF4D4D",
             relief="flat",
             cursor="hand2",
             activebackground=bg_white,
@@ -148,7 +172,7 @@ def CreatePostCard(parent, post_data, current_user, on_delete_callback, edit_cal
             text="Edit", 
             font=("Poppins", 9), 
             bg=bg_white, 
-            fg="#4D65FF", # Warna merah cerah untuk hapus
+            fg="#4D65FF",
             relief="flat",
             cursor="hand2",
             activebackground=bg_white,

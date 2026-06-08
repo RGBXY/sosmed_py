@@ -21,7 +21,7 @@ class Comunity:
         return Comunity(data["id"], data["user_id"], data["name"], data["description"])
     
 class Post:
-    def __init__(self, id, content, created_at, username=None, user_role=None, comunity_name=None):
+    def __init__(self, id, content, created_at, username=None, user_role=None, comunity_name=None, total_likes=0, is_liked_by_me=0):
         self.id = id
         self.content = content
         self.created_at = created_at
@@ -29,6 +29,9 @@ class Post:
         self.username = username
         self.user_role = user_role
         self.comunity_name = comunity_name
+        
+        self.total_likes = total_likes
+        self.is_liked_by_me = bool(is_liked_by_me) 
 
     @staticmethod
     def convert(data):
@@ -38,5 +41,7 @@ class Post:
             data["created_at"],
             data["username"],
             data["user_role"],
-            data["comunity_name"]
+            data["comunity_name"],
+            data["total_likes"],
+            data["is_liked_by_me"]
         )

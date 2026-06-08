@@ -202,8 +202,8 @@ class Post_Logic:
                 "message": ("Error","Post gagal dibuat")
             }
         
-    def get_posts_logic(self):
-        res = get_post()
+    def get_posts_logic(self, current_user_id):
+        res = get_post(current_user_id)
 
         data_posts = [Post.convert(row) for row in res]
 
@@ -243,4 +243,16 @@ class Post_Logic:
                 "message": ("Error","Data gagal di update")
             }
 
+class Like_Logic:
+    def like_logic(self, user_id, post_id):
+        res = like(user_id, post_id)
+        
+        if res == "like":
+            return{
+                "status": "like",
+            }
+        else:
+            return{
+                "status": "unlike",
+            }
         

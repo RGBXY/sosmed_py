@@ -4,7 +4,7 @@ from constrants import *
 from logic import Comunity_Logic, Post_Logic
 
 def PostForm(parent, current_user, edit_post_data, on_submit):    
-    # Main Card Container (Kotak Putih)
+    # Main Card Container 
     user_data = current_user
     comunities = Comunity_Logic()
     posts = Post_Logic()
@@ -20,15 +20,13 @@ def PostForm(parent, current_user, edit_post_data, on_submit):
     )
     card.pack(fill="x", pady=10, padx=20)
     
-    # ----------------------------------------------------
-    # 1. HEADER AREA (Avatar, Username, Role, Timestamp)
-    # ----------------------------------------------------
+    # Header
     header_frame = tk.Frame(card, bg=bg_white)
     header_frame.pack(fill="x")
     
     # Mini Avatar
     avatar_frame = tk.Frame(header_frame, bg=bg_primary, width=40, height=40)
-    avatar_frame.pack(side="left") # Ilustrasi margin
+    avatar_frame.pack(side="left") # 
     avatar_frame.pack_propagate(False)
     
     initial_letter = user_data.username[0].upper() if user_data.username else "?"
@@ -40,11 +38,11 @@ def PostForm(parent, current_user, edit_post_data, on_submit):
         font=("Poppins", 12, "bold")
     ).pack(expand=True)
     
-    # User Info Container (Samping Avatar)
+    # User Info Container
     info_frame = tk.Frame(header_frame, bg=bg_white, padx=10)
     info_frame.pack(side="left", fill="y")
     
-    # Username & Role Badge (Horizontal)
+    # Username & Comunity
     meta_frame = tk.Frame(info_frame, bg=bg_white)
     meta_frame.pack(anchor="w")
     
@@ -56,7 +54,7 @@ def PostForm(parent, current_user, edit_post_data, on_submit):
         fg=text_dark
     ).pack(side="left")
     
-    # Role Badge
+    # Comunity
     role_color = bg_secondary if user_data.role.lower() == "admin" else text_muted
     lbl_role = tk.Label(
         meta_frame, 
@@ -69,9 +67,7 @@ def PostForm(parent, current_user, edit_post_data, on_submit):
     )
     lbl_role.pack(side="left", padx=8)
     
-    # ----------------------------------------------------
-    # 2. BODY AREA (Konten Postingan)
-    # ----------------------------------------------------
+    # Body
     body_frame = tk.Frame(card, bg=bg_white, pady=12)
     body_frame.pack(fill="x")
     
@@ -79,19 +75,15 @@ def PostForm(parent, current_user, edit_post_data, on_submit):
     ent_contents = tk.Text(body_frame, height=4, font=("Poppins", 10))
     ent_contents.pack(fill="x")
     
-    # Pembatas Garis Tipis sebelum masuk footer
     tk.Frame(card, height=1, bg=border_col).pack(fill="x", pady=(5, 10))
     
-    # ----------------------------------------------------
-    # 3. FOOTER AREA (Tombol Aksi)
-    # ----------------------------------------------------
+    # Footer
     footer_frame = tk.Frame(card, bg=bg_white)
     footer_frame.pack(fill="x")
 
     def clear_post():
         ent_contents.delete("1.0", tk.END)
         combo_comunity.set("")
-        # Picu on_submit agar HomeFrame membersihkan state edit_data menjadi None kembali
         on_submit()
 
     def submit_post():
@@ -114,9 +106,6 @@ def PostForm(parent, current_user, edit_post_data, on_submit):
         comunity_id = get_comunity_id()
         content = ent_contents.get("1.0", tk.END).strip()   
 
-        # =========================================================================
-        # PERBAIKAN 1: Arahkan ke fungsi logika edit, bukan create
-        # =========================================================================
         res = posts.edit_post_logic(post_id, content, comunity_id)
 
         if res["status"] == "Error":
@@ -127,12 +116,10 @@ def PostForm(parent, current_user, edit_post_data, on_submit):
             messagebox.showinfo(res["message"][0], res["message"][1])
             clear_post()
     
-    # Ambil data komunitas untuk dropdown combobox
     data_comunity = comunities.get_comunity_logic()
     comunity_map = {row.name: row.id for row in data_comunity}
     data_comunity_name = list(comunity_map.keys())
     
-    # Tampilkan tombol dinamis berdasarkan kondisi edit_post_data
     if edit_post_data:
         btn_edit = tk.Button(
             footer_frame, 
@@ -182,9 +169,6 @@ def PostForm(parent, current_user, edit_post_data, on_submit):
             return None
         return comunity_map[data]
     
-    # =========================================================================
-    # PERBAIKAN 2: Sintaks insert untuk tk.Text wajib menyertakan indeks lokasi
-    # =========================================================================
     if edit_post_data:
         ent_contents.insert("1.0", edit_post_data.content)
         combo_comunity.set(edit_post_data.comunity_name)

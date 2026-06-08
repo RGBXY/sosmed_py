@@ -8,13 +8,11 @@ from logic import Comunity_Logic
 
 class CommunityFrame(tk.Frame):
     def __init__(self, parent, current_user):
-        # Jalankan init dari tk.Frame bawaan
         super().__init__(parent, bg=bg_white)
         self.comunities = Comunity_Logic()
         self.current_user = current_user
         self.selected_community_id = None 
 
-        # 1. Navigasi Fungsi Sidebar
         def go_home():
             from gui.frames.home import HomeFrame
             self.master.switch_frame(
@@ -36,14 +34,12 @@ class CommunityFrame(tk.Frame):
                 current_user=self.master.current_user
             )
         
-        # Navigasi Menu Sidebar
         nav_items = [
             {"title": "Home", "comand": go_home, "active": False},
             {"title": "Dashboard", "comand": go_dashboard, "active": False},
             {"title": "Comunity", "comand": go_comunity, "active": True}
         ]
         
-        # 2. Render Komponen Global (Sidebar & Header)
         sidebar(self, current_user, nav_items)
         main_header(self, current_user, "Komunitas")
 
@@ -53,11 +49,9 @@ class CommunityFrame(tk.Frame):
         container_form_frame = tk.Frame(main_frame, bg=bg_white)
         container_form_frame.pack(fill="x", padx=10, pady=10)
 
-        # === FORM INPUT ===
         form_frame = tk.Frame(container_form_frame, bg=bg_white)
         form_frame.pack(padx=10, pady=10, fill="x")
 
-        # Label & Entry menggunakan GRID
         tk.Label(form_frame, text="Nama Komunitas:", bg=bg_white).grid(row=0, column=0, sticky="w", padx=5, pady=5)
         self.ent_name = tk.Entry(form_frame, width=30)
         self.ent_name.grid(row=0, column=1, padx=5, pady=5)
@@ -66,34 +60,28 @@ class CommunityFrame(tk.Frame):
         self.ent_deskripsi = tk.Entry(form_frame, width=30)
         self.ent_deskripsi.grid(row=1, column=1, padx=5, pady=5)
         
-        # === TOMBOL AKSI (CRUD Buttons) ===
         btn_frame = tk.Frame(container_form_frame, bg=bg_white)
         btn_frame.pack(pady=10, padx=10, fill="x")
 
-        # Tombol Tambah
         self.btn_add = tk.Button(btn_frame, text="Tambah", command=self.tambah_komunitas, bg="green", fg="white", width=10)
         self.btn_add.grid(row=0, column=0, padx=5)
 
-        # Tombol Edit
         self.btn_edit = tk.Button(btn_frame, text="Simpan Edit", command=self.edit_komunitas, bg="orange", fg="white", width=10)
         self.btn_edit.grid(row=0, column=1, padx=5)
 
-        # Tombol Hapus
         self.btn_delete = tk.Button(btn_frame, text="Hapus", command=self.hapus_komunitas, bg="red", fg="white", width=10)
         self.btn_delete.grid(row=0, column=2, padx=5)
 
-        # Tombol Clear Form
         self.btn_clear = tk.Button(btn_frame, text="Clear", command=self.clear_form, bg="grey", fg="white", width=10)
         self.btn_clear.grid(row=0, column=3, padx=5)
 
         table_frame = tk.Frame(main_frame, bg=bg_white)
         table_frame.pack(fill="both", expand=True, padx=10, pady=10)
             
-        # Atur Styling Treeview (Tabel)
+        # Styling Treeview
         self.style = ttk.Style()
         self.style.theme_use("clam")
         
-        # Warna Header Tabel
         self.style.configure(
             "Treeview.Heading",
             background=bg_primary,
@@ -101,7 +89,6 @@ class CommunityFrame(tk.Frame):
             font=("Poppins", 10, "bold"),
         )
             
-        # Warna Baris Tabel
         self.style.configure(
             "Treeview",
             background=bg_white,
@@ -111,14 +98,11 @@ class CommunityFrame(tk.Frame):
             font=("Poppins", 9)
         )
         
-        # Efek Pas Baris Diklik (Selected)
         self.style.map("Treeview", background=[("selected", bg_secondary)])
 
-        # 1. Definisikan Kolom
         columns = ("id", "name", "description")
         self.tree = ttk.Treeview(table_frame, columns=columns, show="headings", selectmode="browse")
         
-        # 2. Atur Judul Header & Lebar Kolom
         self.tree.heading("id", text="ID")
         self.tree.column("id", width=50, anchor="center")
         
@@ -128,27 +112,19 @@ class CommunityFrame(tk.Frame):
         self.tree.heading("description", text="Deskripsi")
         self.tree.column("description", width=300, anchor="w")
 
-        # Bind event klik tabel ke fungsi on_tree_select
         self.tree.bind("<<TreeviewSelect>>", self.on_tree_select)
 
-        # 3. Tambahkan Scrollbar Berdiri (Vertical)
         self.scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
         self.tree.configure(yscrollcommand=self.scrollbar.set)
         
-        # Layouting komponen di dalam Frame ini
         self.scrollbar.pack(side="right", fill="y", padx=(0, 10), pady=10)
         self.tree.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # 4. Masukkan Datanya awal
         self.refresh_table_data()
 
 
-    # =================================================================
-    # METHOD UTAMA CLASS (CRUD LOGIC & HELPER FUNCTIONS)
-    # =================================================================
-
+    # METHOD 
     def refresh_table_data(self):
-        """Fungsi pembantu untuk memuat ulang data dari database ke tabel"""
         data = self.comunities.get_comunity_logic()
         self.load_data(data)
 
@@ -214,19 +190,16 @@ class CommunityFrame(tk.Frame):
                 self.refresh_table_data()
             
     def kursor_pilih_data(self, id_komunitas, nama_komunitas, deskripsi_komunitas):
-        """Memasukkan data yang diklik ke form input"""
         self.clear_form()
         self.selected_community_id = id_komunitas
         self.ent_name.insert(0, nama_komunitas)
         self.ent_deskripsi.insert(0, deskripsi_komunitas)
 
     def on_tree_select(self, event):
-        """Trigger otomatis saat baris tabel di klik oleh user"""
         selected_id = self.get_selected_community_id()
         if selected_id:
             selected_item = self.tree.selection()[0]
             values = self.tree.item(selected_item)['values']
-            # Ambil nama komunitas dari kolom index ke-1
             nama_komunitas = values[1] 
             deskripsi_komunitas = values[2] 
             self.kursor_pilih_data(selected_id, nama_komunitas, deskripsi_komunitas)
