@@ -1,5 +1,5 @@
-from model import User, Comunity
-from data import login_user_auth, register_user_auth, change_username, delete_user, create_comunity, get_comunity, update_comunity, delete_comunity
+from model import *
+from data import *
 
 class Auth:
     def login_logic(self, username, password):        
@@ -116,6 +116,9 @@ class User_Profile:
                 "message": ("Error","Akun gagal dihapus")
             }
         
+    def get_user_by_id(id):
+        pass
+        
 class Comunity_Logic:
     def create_comunity_logic(self, user_id, name, descripition):
         if not len(name) or not len(descripition):
@@ -178,4 +181,66 @@ class Comunity_Logic:
                 "message": ("Error","Data gagal dihapus")
             }
         
+class Post_Logic:
+    def create_posts_logic(self, user_id, comunity_id, content):
+        if not comunity_id or not content:
+            return{
+                "status": "Error",
+                "message": ("Error","Nama komunitas dan deskripsi tidak boleh kosong")
+            }
+        
+        res = create_post(user_id, comunity_id, content)
+
+        if res == True:
+            return{
+                "status": "Success",
+                "message": ("Success", "Post berhasil di buat")
+            }
+        else:
+            return{
+                "status": "Error",
+                "message": ("Error","Post gagal dibuat")
+            }
+        
+    def get_posts_logic(self):
+        res = get_post()
+
+        data_posts = [Post.convert(row) for row in res]
+
+        return data_posts
+    
+    def delete_post_logic(self, id):
+        res = delete_post(id)
+
+        if res == True:
+            return{
+                "status": "Success",
+                "message": ("Success", "Data berhasil di hapus")
+            }
+        else:
+            return{
+                "status": "Error",
+                "message": ("Error","Data gagal dihapus")
+            }
+        
+    def edit_post_logic(self, id, content, comunity_id):
+        if not content or not comunity_id:
+            return{
+                "status": "Error",
+                "message": ("Error","Data tidak boleh kosong")
+            }
+        
+        res = update_post(id, content, comunity_id)
+
+        if res == True:
+            return{
+                "status": "Success",
+                "message": ("Success", "Data berhasil di update")
+            }
+        else:
+            return{
+                "status": "Error",
+                "message": ("Error","Data gagal di update")
+            }
+
         

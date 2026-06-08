@@ -1,12 +1,14 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from constrants import *
-from logic import Comunity_Logic
+from logic import Comunity_Logic, Post_Logic
 
-def PostForm(parent, current_user):    
+def PostForm(parent, current_user, edit_post_data, on_submit):    
     # Main Card Container (Kotak Putih)
     user_data = current_user
     comunities = Comunity_Logic()
+    posts = Post_Logic()
+    edit_data = edit_post_data
 
     card = tk.Frame(
         parent, 
@@ -27,10 +29,9 @@ def PostForm(parent, current_user):
     # Mini Avatar
     avatar_frame = tk.Frame(header_frame, bg=bg_primary, width=40, height=40)
     avatar_frame.pack(side="left") # Ilustrasi margin
-    avatar_frame.pack(side="left")
     avatar_frame.pack_propagate(False)
     
-    initial_letter = user_data.username[0].upper()
+    initial_letter = user_data.username[0].upper() if user_data.username else "?"
     tk.Label(
         avatar_frame, 
         text=initial_letter, 
@@ -53,7 +54,7 @@ def PostForm(parent, current_user):
         font=("Poppins", 10, "bold"), 
         bg=bg_white, 
         fg=text_dark
-    ).pack()
+    ).pack(side="left")
     
     # Role Badge
     role_color = bg_secondary if user_data.role.lower() == "admin" else text_muted
@@ -66,7 +67,7 @@ def PostForm(parent, current_user):
         padx=6,
         pady=1
     )
-    lbl_role.pack(padx=8)
+    lbl_role.pack(side="left", padx=8)
     
     # ----------------------------------------------------
     # 2. BODY AREA (Konten Postingan)
@@ -74,8 +75,8 @@ def PostForm(parent, current_user):
     body_frame = tk.Frame(card, bg=bg_white, pady=12)
     body_frame.pack(fill="x")
     
-    # Label Post Content (PENTING: wraplength di-set agar teks otomatis turun ke bawah)
-    ent_contents = tk.Text(body_frame, height=4)
+    # Label Post Content
+    ent_contents = tk.Text(body_frame, height=4, font=("Poppins", 10))
     ent_contents.pack(fill="x")
     
     # Pembatas Garis Tipis sebelum masuk footer
@@ -87,40 +88,105 @@ def PostForm(parent, current_user):
     footer_frame = tk.Frame(card, bg=bg_white)
     footer_frame.pack(fill="x")
 
-    comunity_id = None
+    def clear_post():
+        ent_contents.delete("1.0", tk.END)
+        combo_comunity.set("")
+        # Picu on_submit agar HomeFrame membersihkan state edit_data menjadi None kembali
+        on_submit()
 
     def submit_post():
         user_id = current_user.id
-        comunity_id = comunity_id
-        content = ent_contents.get()   
+        comunity_id = get_comunity_id()
+        content = ent_contents.get("1.0", tk.END).strip()   
+
+        res = posts.create_posts_logic(user_id, comunity_id, content)
+
+        if res["status"] == "Error":
+            messagebox.showerror(res["message"][0], res["message"][1])
+            return
         
-             
-    
-    # Tombol Like (Dummy)
-    btn_post = tk.Button(
-        footer_frame, 
-        text="Post Konten", 
-        font=("Poppins", 9), 
-        bg=bg_primary, 
-        fg=bg_white,
-        relief="flat",
-        cursor="hand2",
-        activebackground=bg_white
-    )
-    btn_post.pack(side="left", padx=(0, 15))
+        if res["status"] == "Success":
+            messagebox.showinfo(res["message"][0], res["message"][1])
+            clear_post()
 
+    def edit_post():
+        post_id = edit_data.id
+        comunity_id = get_comunity_id()
+        content = ent_contents.get("1.0", tk.END).strip()   
+
+        # =========================================================================
+        # PERBAIKAN 1: Arahkan ke fungsi logika edit, bukan create
+        # =========================================================================
+        res = posts.edit_post_logic(post_id, content, comunity_id)
+
+        if res["status"] == "Error":
+            messagebox.showerror(res["message"][0], res["message"][1])
+            return
+        
+        if res["status"] == "Success":
+            messagebox.showinfo(res["message"][0], res["message"][1])
+            clear_post()
+    
+    # Ambil data komunitas untuk dropdown combobox
     data_comunity = comunities.get_comunity_logic()
-    
     comunity_map = {row.name: row.id for row in data_comunity}
-
     data_comunity_name = list(comunity_map.keys())
+    
+    # Tampilkan tombol dinamis berdasarkan kondisi edit_post_data
+    if edit_post_data:
+        btn_edit = tk.Button(
+            footer_frame, 
+            text="Simpan Perubahan", 
+            font=("Poppins", 9, "bold"), 
+            bg="#4D65FF", 
+            fg=bg_white,
+            relief="flat",
+            cursor="hand2",
+            command=edit_post,
+            activebackground=bg_white
+        )
+        btn_edit.pack(side="left", padx=(0, 15))
+
+        btn_clear = tk.Button(
+            footer_frame, 
+            text="Cancel", 
+            font=("Poppins", 9), 
+            bg="#FF4D4D", 
+            fg=bg_white,
+            relief="flat",
+            cursor="hand2",
+            command=clear_post,
+            activebackground=bg_white
+        )
+        btn_clear.pack(side="left", padx=(0, 15))
+    else:
+        btn_post = tk.Button(
+            footer_frame, 
+            text="Post Konten", 
+            font=("Poppins", 9, "bold"), 
+            bg=bg_primary, 
+            fg=bg_white,
+            relief="flat",
+            cursor="hand2",
+            command=submit_post,
+            activebackground=bg_white
+        )
+        btn_post.pack(side="left", padx=(0, 15))
+
     combo_comunity = ttk.Combobox(footer_frame, state="readonly", values=data_comunity_name)
     combo_comunity.pack(side="left", padx=(0, 15))
 
     def get_comunity_id():
         data = combo_comunity.get()
-        return comunity_map["data"]
+        if not data:
+            return None
+        return comunity_map[data]
     
-    comunity_id = get_comunity_id()
-        
+    # =========================================================================
+    # PERBAIKAN 2: Sintaks insert untuk tk.Text wajib menyertakan indeks lokasi
+    # =========================================================================
+    if edit_post_data:
+        ent_contents.insert("1.0", edit_post_data.content)
+        combo_comunity.set(edit_post_data.comunity_name)
+            
     return card

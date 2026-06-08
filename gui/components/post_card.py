@@ -3,7 +3,7 @@ from tkinter import messagebox
 from constrants import *
 
 
-def CreatePostCard(parent, post_data, current_user, on_delete_callback=None):    
+def CreatePostCard(parent, post_data, current_user, on_delete_callback, edit_callback):   
     # Main Card Container (Kotak Putih)
     card = tk.Frame(
         parent, 
@@ -27,7 +27,7 @@ def CreatePostCard(parent, post_data, current_user, on_delete_callback=None):
     avatar_frame.pack(side="left")
     avatar_frame.pack_propagate(False)
     
-    initial_letter = post_data["username"][0].upper() if post_data["username"] else "?"
+    initial_letter = post_data.username[0].upper() if post_data.username else "?"
     tk.Label(
         avatar_frame, 
         text=initial_letter, 
@@ -46,17 +46,17 @@ def CreatePostCard(parent, post_data, current_user, on_delete_callback=None):
     
     tk.Label(
         meta_frame, 
-        text=post_data["username"], 
+        text=post_data.username, 
         font=("Poppins", 10, "bold"), 
         bg=bg_white, 
         fg=text_dark
     ).pack(side="left")
     
     # Role Badge
-    role_color = bg_secondary if post_data["role"].lower() == "admin" else text_muted
+    role_color = bg_secondary
     lbl_role = tk.Label(
         meta_frame, 
-        text=post_data["role"].upper(), 
+        text=post_data.comunity_name.upper(), 
         font=("Poppins", 7, "bold"), 
         bg=border_col, 
         fg=role_color,
@@ -68,7 +68,7 @@ def CreatePostCard(parent, post_data, current_user, on_delete_callback=None):
     # Timestamp
     tk.Label(
         info_frame, 
-        text=post_data.get("timestamp", "Baru saja"), 
+        text=post_data.created_at, 
         font=("Poppins", 8), 
         bg=bg_white, 
         fg=text_muted
@@ -83,7 +83,7 @@ def CreatePostCard(parent, post_data, current_user, on_delete_callback=None):
     # Label Post Content (PENTING: wraplength di-set agar teks otomatis turun ke bawah)
     lbl_content = tk.Label(
         body_frame, 
-        text=post_data["content"], 
+        text=post_data.content, 
         font=("Poppins", 10), 
         bg=bg_white, 
         fg=text_dark,
@@ -129,7 +129,7 @@ def CreatePostCard(parent, post_data, current_user, on_delete_callback=None):
     btn_comment.pack(side="left")
     
     # TOMBOL HAPUS: Hanya muncul jika user yang login adalah pemilik post, ATAU user adalah Admin
-    if current_user.username == post_data["username"] or current_user.role.lower() == "admin":
+    if current_user.username == post_data.username or current_user.role.lower() == "admin" or current_user.role.lower() == "moderator":
         btn_delete = tk.Button(
             footer_frame, 
             text="🗑️ Hapus", 
@@ -139,8 +139,21 @@ def CreatePostCard(parent, post_data, current_user, on_delete_callback=None):
             relief="flat",
             cursor="hand2",
             activebackground=bg_white,
-            command=lambda: on_delete_callback(post_data["id"]) if on_delete_callback else None
+            command=lambda: on_delete_callback(post_data.id)
         )
         btn_delete.pack(side="right")
+
+        btn_edit = tk.Button(
+            footer_frame, 
+            text="Edit", 
+            font=("Poppins", 9), 
+            bg=bg_white, 
+            fg="#4D65FF", # Warna merah cerah untuk hapus
+            relief="flat",
+            cursor="hand2",
+            activebackground=bg_white,
+            command=lambda: edit_callback(post_data)
+        )
+        btn_edit.pack(side="right")
         
     return card

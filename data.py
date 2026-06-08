@@ -14,7 +14,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL,
             password TEXT NOT NULL,
-            role TEXT NOT NULL,
+            role TEXT NOT NULL
         )""")
     conn.commit()
 
@@ -198,5 +198,55 @@ def get_comunity():
 
 # Post
 def create_post(user_id, comunity_id, content):
-    pass    
+    conn = get_db()
+
+    conn.execute("INSERT INTO posts (user_id, comunity_id, content) VALUES (?,?,?)", (user_id, comunity_id, content))
+    conn.commit()
+
+    conn.close()
+    return True
+
+def get_post():
+    conn = get_db()
+    
+    data_posts = conn.execute("""
+        SELECT 
+        posts.id, 
+        posts.content, 
+        posts.created_at, 
+        users.username AS username, 
+        users.role AS user_role,
+        comunities.name AS comunity_name
+                              
+        FROM posts
+        INNER JOIN users ON posts.user_id = users.id
+        INNER JOIN comunities ON posts.comunity_id = comunities.id
+        ORDER BY posts.created_at DESC;
+    """).fetchmany(10)
+
+    conn.close()
+    return data_posts
+
+def update_post(id, content, comunity_id):
+    conn = get_db()
+
+    conn.execute("""
+        UPDATE posts SET 
+            content = ?, 
+            comunity_id = ?
+        WHERE id = ?;
+    """, (content, comunity_id, id))
+    conn.commit()
+    conn.close()
+
+    return True
+
+def delete_post(id):
+    conn = get_db()
+
+    conn.execute("DELETE FROM posts WHERE id=?", (id,))
+    conn.commit()
+
+    conn.close
+    return True
 
