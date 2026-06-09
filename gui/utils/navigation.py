@@ -7,8 +7,12 @@ def render_role_sidebar(current_frame, current_user, active_title="Home"):
     def go_home():
         from gui.frames.home import HomeFrame
         master.switch_frame(HomeFrame, current_user=current_user)
+
+    def go_saved_post():
+        from gui.frames.saved_post import SavedPostFrame
+        master.switch_frame(SavedPostFrame, current_user=current_user)
          
-    def go_activity():
+    def go_comunity():
         from gui.frames.comunity import ComunityFrame
         master.switch_frame(ComunityFrame, current_user=current_user)
         
@@ -22,7 +26,8 @@ def render_role_sidebar(current_frame, current_user, active_title="Home"):
 
     nav_items = [
         {"title": "Home", "comand": go_home, "active": active_title == "Home"},
-        {"title": "Comunity", "comand": go_activity, "active": active_title == "Comunity"}
+        {"title": "Saved Post", "comand": go_saved_post, "active": active_title == "Saved_Post"},
+        {"title": "Comunity", "comand": go_comunity, "active": active_title == "Comunity"}
     ]
     
     if current_user.role == "moderator":            

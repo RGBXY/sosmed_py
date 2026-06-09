@@ -71,6 +71,18 @@ def init_db():
             FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
         )""")
     
+    # Create table saved post
+    conn.execute("""
+       CREATE TABLE IF NOT EXISTS saved_posts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            post_id INTEGER NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
+        )""")
+    
     check_user = conn.execute("SELECT COUNT(*) FROM users").fetchone()
     if check_user[0] == 0:
         data_users = [
@@ -192,6 +204,7 @@ def get_comunity():
     conn = get_db()
     
     data_comunity = conn.execute("SELECT * FROM comunities").fetchmany(10)
+    
 
     conn.close()
     return data_comunity
@@ -219,18 +232,29 @@ def get_post(current_user_id):
             comunities.name AS comunity_name,
             
             COUNT(likes.post_id) AS total_likes,
-            MAX(CASE WHEN likes.user_id = ? THEN 1 ELSE 0 END) AS is_liked_by_me
-                               
+            MAX(CASE WHEN likes.user_id = ? THEN 1 ELSE 0 END) AS is_liked_by_me,
+            
+            (SELECT COUNT(*) FROM saved_posts WHERE saved_posts.post_id = posts.id AND saved_posts.user_id = ?) AS is_saved_by_me,
+
+            (SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.id) AS total_comments,
+            
+            (1.0 / (1.0 + (JULIANDAY('now') - JULIANDAY(posts.created_at)) * 24)) AS recency_weight,
+            
+            (
+                COUNT(likes.post_id) * 2 +
+                (SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.id) * 3 +
+                (1.0 / (1.0 + (JULIANDAY('now') - JULIANDAY(posts.created_at)) * 24))
+            ) AS feed_score
+                                
         FROM posts
         INNER JOIN users ON posts.user_id = users.id
         INNER JOIN comunities ON posts.comunity_id = comunities.id
-        
         LEFT JOIN likes ON posts.id = likes.post_id
         
         GROUP BY posts.id
         
-        ORDER BY posts.created_at DESC;
-    """, (current_user_id, )).fetchmany(10)
+        ORDER BY feed_score DESC;
+    """, (current_user_id, current_user_id)).fetchmany(10)
 
     conn.close()
     return data_posts
@@ -276,6 +300,105 @@ def like(user_id, post_id):
         
         conn.close()
         return "like"
+    
+# Comment
+def comment(user_id, post_id, content):
+    conn = get_db()
 
+    conn.execute("INSERT INTO comments (user_id, post_id, content) VALUES (?,?,?)", (user_id, post_id, content))
+    conn.commit()
 
+    conn.close()
+    return True
 
+def get_comment(post_id):
+    conn = get_db()
+
+    query = """
+        SELECT 
+            comments.id,
+            comments.user_id,
+            comments.post_id,
+            comments.content,
+            comments.created_at,
+            users.username AS username
+        FROM comments
+        INNER JOIN users ON comments.user_id = users.id
+        WHERE comments.post_id = ?
+        ORDER BY comments.id ASC;
+    """
+    
+    res = conn.execute(query, (post_id,)).fetchall()
+
+    conn.close()
+    return res
+
+def delete_comment(id):
+    conn = get_db()
+
+    conn.execute("DELETE FROM comments WHERE id = ?", (id,))
+    conn.commit()
+
+    conn.close()
+    return True
+
+def update_comment(id, content):
+    conn = get_db()
+
+    conn.execute("""
+        UPDATE comments SET 
+            content = ?
+        WHERE id = ?
+    """, (content, id))
+    conn.commit()
+    conn.close()
+
+    return True
+
+# Saved Post
+def saved_post(user_id, post_id):
+    conn = get_db()
+    
+    res = conn.execute("SELECT 1 FROM saved_posts WHERE user_id = ? AND post_id = ?", (user_id, post_id)).fetchone()
+    
+    if res:
+        conn.execute("DELETE FROM saved_posts WHERE user_id = ? and post_id = ?", (user_id, post_id))
+        conn.commit()
+        
+        conn.close()
+        return "unsave"
+    else:
+        conn.execute("INSERT INTO saved_posts (user_id, post_id) VALUES (?, ?)", (user_id, post_id))
+        conn.commit()
+        
+        conn.close()
+        return "save"
+    
+def get_saved_posts(user_id):
+    conn = get_db()
+
+    query = """
+        SELECT 
+            posts.id, 
+            posts.content, 
+            posts.created_at, 
+            users.username AS username, 
+            users.role AS user_role,
+            comunities.name AS comunity_name,
+            
+            (SELECT COUNT(*) FROM likes WHERE likes.post_id = posts.id) AS total_likes,
+            (SELECT COUNT(*) FROM likes WHERE likes.post_id = posts.id AND likes.user_id = ?) AS is_liked_by_me,
+            1 AS is_saved_by_me
+                               
+        FROM saved_posts
+        INNER JOIN posts ON saved_posts.post_id = posts.id
+        INNER JOIN users ON posts.user_id = users.id
+        INNER JOIN comunities ON posts.comunity_id = comunities.id
+        
+        WHERE saved_posts.user_id = ?
+        ORDER BY saved_posts.created_at DESC;
+    """
+    
+    res = conn.execute(query, (user_id, user_id)).fetchall()
+    conn.close()
+    return res

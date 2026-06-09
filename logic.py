@@ -255,4 +255,83 @@ class Like_Logic:
             return{
                 "status": "unlike",
             }
+
+class Comment_Logic:
+    def comments_logic(self, user_id, post_id, content):
+        res = comment(user_id, post_id, content)
+
+        if res == True:
+            return{
+                "status": "Success",
+                "message": ("Success", "Comment berhasil dibuat")
+            }
+        else:
+            return{
+                "status": "Error",
+                "message": ("Error","Comment berhasil dibuat")
+            }
         
+    def get_comments_logic(self, post_id):
+        res = get_comment(post_id)
+
+        data_comments = [Comment.convert(row) for row in res]
+
+        return data_comments
+    
+    def upadate_comment_logic(self, id, content):
+        if not content:
+            if not content:
+                return{
+                    "status": "Error",
+                    "message": ("Error","Data tidak boleh kosong")
+                }
+            
+        res = update_comment(id, content)
+
+        if res == True:
+            return{
+                "status": "Success",
+                "message": ("Success", "Data berhasil di update")
+            }
+        else:
+            return{
+                "status": "Error",
+                "message": ("Error","Data gagal di update")
+            }
+        
+    def delete_comment_logic(self, id):
+        res = delete_comment(id)
+
+        if res == True:
+            return{
+                "status": "Success",
+                "message": ("Success", "Data berhasil di hapus")
+            }
+        else:
+            return{
+                "status": "Error",
+                "message": ("Error","Data gagal dihapus")
+            }
+        
+class Saved_Post_Logic:
+    def saved_post_logic(self, user_id, post_id):
+        res = saved_post(user_id, post_id)
+        
+        if res == "save":
+            return{
+                "status": "save",
+            }
+        else:
+            return{
+                "status": "unsave",
+            }
+
+    def get_saved_posts_logic(self, current_user_id):
+        # Ambil data rows dari database
+        res = get_saved_posts(current_user_id)
+
+        # Konversi row database menjadi list object model Post
+        data_posts = [Post.convert(row) for row in res]
+
+        return data_posts
+    

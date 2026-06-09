@@ -120,7 +120,7 @@ def PostForm(parent, current_user, edit_post_data, on_submit):
     comunity_map = {row.name: row.id for row in data_comunity}
     data_comunity_name = list(comunity_map.keys())
     
-    if edit_post_data:
+    if edit_data:
         btn_edit = tk.Button(
             footer_frame, 
             text="Simpan Perubahan", 
