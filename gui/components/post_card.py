@@ -79,13 +79,9 @@ def CreatePostCard(parent, post_data, current_user, on_liked, on_delete_callback
             if not new_content.strip():
                 messagebox.showwarning("Peringatan", "Komentar tidak boleh kosong!")
                 return
-            
-            try:
-                res = comment_backend.upadate_comment_logic(comment_id, new_content)
-            except AttributeError:
-                print("error")
-                return
-                
+        
+            res = comment_backend.upadate_comment_logic(comment_id, new_content)
+
             if res["status"] == "Success":
                 messagebox.showinfo(res["message"][0], res["message"][1])
                 render_comments(card.list_container)
@@ -94,12 +90,8 @@ def CreatePostCard(parent, post_data, current_user, on_liked, on_delete_callback
 
     def trigger_delete_comment(comment_id):
         if messagebox.askyesno("Konfirmasi", "Apakah Anda yakin ingin menghapus komentar ini?"):
-            try:
-                res = comment_backend.delete_comment_logic(comment_id)
-            except AttributeError:
-                print("error")
-                return
-
+            res = comment_backend.delete_comment_logic(comment_id)
+        
             if res["status"] == "Success":
                 messagebox.showinfo(res["message"][0], res["message"][1])
                 render_comments(card.list_container)
@@ -110,13 +102,7 @@ def CreatePostCard(parent, post_data, current_user, on_liked, on_delete_callback
         for widget in container.winfo_children():
             widget.destroy()
             
-        try:
-            comments_list = comment_backend.get_comments_logic(post_data.id)
-        except Exception:
-            try:
-                comments_list = Comment_Logic.get_comments_logic(post_data.id)
-            except Exception:
-                comments_list = []
+        comments_list = comment_backend.get_comments_logic(post_data.id)
 
         if not comments_list:
             lbl_empty = tk.Label(container, text="Belum ada komentar.", font=("Poppins", 9, "italic"), bg=bg_white, fg=text_muted)
