@@ -112,7 +112,7 @@ class HomeFrame(tk.Frame):
 
     def on_canvas_configure(self, event):
         self.canvas.itemconfig(self.canvas_window, width=event.width)
-
+    
     def on_mousewheel(self, event):
         if self.canvas.winfo_exists() and getattr(self, 'has_scroll', False):
             self.canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")

@@ -128,6 +128,13 @@ class ComunityFrame(tk.Frame):
             action_frame = tk.Frame(card, bg=bg_white)
             action_frame.pack(side="right", fill="y")
 
+            btn_haha = tk.Button(
+                action_frame, text="All post", command=lambda r=row: self.set_detail_post(r.id),
+                font=("Poppins", 8, "bold"), bg=bg_white, fg="#1E88E5", relief="flat", cursor="hand2"
+            )
+
+            btn_haha.pack(side="left", padx=5, expand=True)
+
             if self.current_user.id == row.user_id or self.current_user.role.lower() == "admin" or self.current_user.role.lower() == "moderator":
                 btn_edit = tk.Button(
                     action_frame, text="Edit", command=lambda r=row: self.set_form_to_edit_mode(r),
@@ -145,6 +152,11 @@ class ComunityFrame(tk.Frame):
     def refresh_page_data(self):
         data = self.comunities.get_comunity_logic()
         self.load_cards(data)
+
+    def get_comunity_post(self, comunity_id):
+        res = self.comunities.get_comunity_post_logic(comunity_id)
+
+        
 
     def clear_form(self):
         self.ent_name.delete(0, tk.END)
@@ -164,6 +176,10 @@ class ComunityFrame(tk.Frame):
         self.lbl_form_title.configure(text="Edit Komunitas", fg=bg_primary)
         self.btn_submit.configure(text="Simpan Perubahan", command=self.edit_komunitas, bg=bg_primary)
         self.canvas.yview_moveto(0)
+
+    def set_detail_post(self, id):
+        from gui.frames.comunity_post import ComunityPostFrame
+        self.master.switch_frame(ComunityPostFrame, current_user=self.current_user, comunity_id=id)
 
     def tambah_komunitas(self):
         user_id = self.current_user.id

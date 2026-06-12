@@ -2,45 +2,18 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from constrants import *
-from gui.components.sidebar import sidebar
+from gui.utils.navigation import render_role_sidebar
 from gui.components.header import main_header
 from logic import Comunity_Logic 
 
-class CommunityFrame(tk.Frame):
+class CommunityManagementFrame(tk.Frame):
     def __init__(self, parent, current_user):
         super().__init__(parent, bg=bg_white)
         self.comunities = Comunity_Logic()
         self.current_user = current_user
         self.selected_community_id = None 
 
-        def go_home():
-            from gui.frames.home import HomeFrame
-            self.master.switch_frame(
-                HomeFrame,
-                current_user=self.master.current_user
-            )
-             
-        def go_dashboard():
-            from gui.frames.moderator.dashboard_moderator import DashboardModerator
-            self.master.switch_frame(
-                DashboardModerator, 
-                current_user=self.master.current_user
-            )
-
-        def go_comunity():
-            from gui.frames.moderator.comunity import CommunityFrame
-            self.master.switch_frame(
-                CommunityFrame,
-                current_user=self.master.current_user
-            )
-        
-        nav_items = [
-            {"title": "Home", "comand": go_home, "active": False},
-            {"title": "Dashboard", "comand": go_dashboard, "active": False},
-            {"title": "Comunity", "comand": go_comunity, "active": True}
-        ]
-        
-        sidebar(self, current_user, nav_items)
+        render_role_sidebar(self, current_user, "Comunity_Management")
         main_header(self, current_user, "Komunitas")
 
         main_frame = tk.Frame(self)

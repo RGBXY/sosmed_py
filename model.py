@@ -21,8 +21,9 @@ class Comunity:
         return Comunity(data["id"], data["user_id"], data["name"], data["description"])
     
 class Post:
-    def __init__(self, id, content, created_at, username, user_role, comunity_name, total_likes, is_liked_by_me, is_saved_by_me):
+    def __init__(self, id, user_id, content, created_at, username, user_role, comunity_name, total_likes, is_liked_by_me, is_saved_by_me, follow_status=None):
         self.id = id
+        self.user_id = user_id  # Ditambahkan
         self.content = content
         self.created_at = created_at
         self.username = username
@@ -31,11 +32,13 @@ class Post:
         self.total_likes = total_likes
         self.is_liked_by_me = is_liked_by_me
         self.is_saved_by_me = is_saved_by_me
+        self.follow_status = follow_status  # Ditambahkan (default None jika tidak ada)
 
     @staticmethod
     def convert(data):
         return Post(
             data["id"],
+            data["user_id"],  # Ditambahkan
             data["content"],
             data["created_at"],
             data["username"],
@@ -43,9 +46,9 @@ class Post:
             data["comunity_name"],
             data["total_likes"],
             data["is_liked_by_me"],
-            data["is_saved_by_me"]
+            data["is_saved_by_me"],
+            data["follow_status"],
         )
-        
     
 class Comment:
      def __init__(self, id, user_id, post_id, content, created_at, username):
@@ -65,3 +68,29 @@ class Comment:
             data["content"],
             data["created_at"],
             data["username"])
+
+class NotificationData:
+    def __init__(self, id, user_id, sender_id, type, message, related_id, is_read, created_at, sender_username=None):
+        self.id = id
+        self.user_id = user_id
+        self.sender_id = sender_id
+        self.type = type
+        self.message = message
+        self.related_id = related_id
+        self.is_read = is_read
+        self.created_at = created_at
+        self.sender_username = sender_username # Opsional untuk mempermudah UI
+
+    @staticmethod
+    def convert(data):
+        return NotificationData(
+            data["id"],
+            data["user_id"],
+            data["sender_id"],
+            data["type"],
+            data["message"],
+            data["related_id"],
+            data["is_read"],
+            data["created_at"],
+            data["sender_username"] if "sender_username" in data.keys() else None
+        )

@@ -20,7 +20,7 @@ class FormUserProfileFrame(tk.Frame):
             )
              
         def go_activity():
-            from gui.frames.comunity import ComunityFrame
+            from gui.frames.comunity_management import ComunityFrame
 
             self.master.switch_frame(
                 ComunityFrame,
