@@ -832,16 +832,16 @@ def get_dashboard_metrics():
         
     return metrics
 
-
 def get_recent_violations(limit=5):
     """
-    Mengambil log pelanggaran kata kasar terbaru beserta nama usernya
+    Mengambil log pelanggaran kata kasar terbaru beserta nama usernya dan user_id
     """
     conn = get_db()
     logs = []
     try:
+        # TAMBAHKAN u.id (atau v.user_id) ke dalam query SELECT
         query = """
-            SELECT v.id, u.username, v.created_at 
+            SELECT v.id, u.username, v.created_at, u.id 
             FROM user_violation_logs v
             JOIN users u ON v.user_id = u.id
             ORDER BY v.created_at DESC 
@@ -854,7 +854,6 @@ def get_recent_violations(limit=5):
         conn.close()
         
     return logs
-
 
 def clear_all_violation_logs():
     """
@@ -871,8 +870,59 @@ def clear_all_violation_logs():
     finally:
         conn.close()
 
+def get_user_activity_summary():
+    """
+    Mengambil ringkasan aktivitas kumulatif untuk setiap user:
+    Jumlah post, total like yang diberikan, total komentar yang ditulis, dan total pelanggaran.
+    """
+    conn = get_db()
+    activity_summary = []
+    try:
+        query = """
+            SELECT 
+                u.id AS user_id,
+                u.username,
+                u.role,
+                (SELECT COUNT(*) FROM posts WHERE posts.user_id = u.id) AS total_posts,
+                (SELECT COUNT(*) FROM likes WHERE likes.user_id = u.id) AS total_likes_given,
+                (SELECT COUNT(*) FROM comments WHERE comments.user_id = u.id) AS total_comments_written,
+                (SELECT COUNT(*) FROM user_violation_logs WHERE user_violation_logs.user_id = u.id) AS total_violations
+            FROM users u
+            ORDER BY total_posts DESC
+        """
+        activity_summary = conn.execute(query).fetchall()
+    except Exception as e:
+        print(f"Error fetching user activity summary: {e}")
+    finally:
+        conn.close()
+    return activity_summary
 
 
-
+def export_metrics_to_csv(metric_type, filename):
+    """
+    Fungsi utilitas untuk mengekspor metrik dashboard ke file CSV.
+    metric_type pilihan: 'engagement', 'activity', atau 'communities'
+    """
+    try:
+        if os.path.dirname(filename):
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
+            
+        elif metric_type == 'activity':
+            data = get_user_activity_summary()
+            headers = ['User ID', 'Username', 'Role', 'Total Posts', 'Total Likes Given', 'Total Comments Written', 'Total Violations']
+            with open(filename, mode='w', encoding='utf-8', newline='') as f:
+                writer = csv.writer(f)
+                writer.writerow(headers)
+                for row in data:
+                    writer.writerow([row['user_id'], row['username'], row['role'], row['total_posts'], row['total_likes_given'], row['total_comments_written'], row['total_violations']])
+            return True            
+        
+        else:
+            print("Tipe metrik tidak dikenal untuk ekspor CSV.")
+            return False
+            
+    except Exception as e:
+        print(f"Gagal mengekspor data ke CSV: {e}")
+        return False
 
 

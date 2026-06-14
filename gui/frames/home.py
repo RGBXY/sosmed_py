@@ -31,9 +31,6 @@ class HomeFrame(tk.Frame):
         self.form_container = tk.Frame(self.feed_area, bg=bg_main)
         self.form_container.pack(fill="x", anchor="n")
 
-        side_content = tk.Frame(right_container, bg=bg_main, padx=20, pady=20)
-        side_content.pack(fill="both", expand=True, side="left")
-
         self.render_post_form()
 
         # Setup Scrollbar

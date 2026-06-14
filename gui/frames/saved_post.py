@@ -10,51 +10,72 @@ class SavedPostFrame(tk.Frame):
     def __init__(self, parent, current_user):
         super().__init__(parent, bg=bg_white) 
         self.current_user = current_user
+        self.has_scroll = False # Flag untuk mendeteksi status scrollbar
         
         # Setup Sidebar and Header
         render_role_sidebar(self, current_user, "Saved_Post")
-        main_header(self, current_user, "Saved Post")
         
-        self.main_content = tk.Frame(self, bg=bg_white)
+        # Main Content Container dibuat full di sebelah kanan
+        self.main_content = tk.Frame(self, bg=bg_main) # Menggunakan bg_main agar konsisten dengan Home
         self.main_content.pack(side="right", fill="both", expand=True)
+        
+        main_header(self.main_content, current_user, "Saved Post")
+        
+        # Frame pembungkus area scrollable agar padding-nya rapi
+        self.feed_area = tk.Frame(self.main_content, bg=bg_main, padx=20, pady=5)
+        self.feed_area.pack(fill="both", expand=True)
         
         self.create_scrollable_area()
         
         self.load_saved_posts()
 
     def create_scrollable_area(self):
-            self.canvas = tk.Canvas(self.main_content, bg=bg_white, highlightthickness=0)
-            self.scrollbar = tk.Scrollbar(self.main_content, orient="vertical", command=self.canvas.yview)
-            
-            self.scrollable_frame = tk.Frame(self.canvas, bg=bg_white)
-            
-            def update_scroll_region(event):
-                content_height = self.scrollable_frame.winfo_reqheight()
-                canvas_height = self.canvas.winfo_height()
-                
-                self.canvas.configure(scrollregion=(0, 0, 650, content_height))
-                
-                if content_height <= canvas_height:
-                    self.scrollbar.pack_forget()
-                else:
-                    self.scrollbar.pack(side="right", fill="y")
+        # Container utama scroll
+        scroll_container = tk.Frame(self.feed_area, bg=bg_main)
+        scroll_container.pack(fill="both", expand=True)
 
-            self.scrollable_frame.bind("<Configure>", update_scroll_region)
-            
-            self.canvas_window = self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw", width=650) 
-            self.canvas.configure(yscrollcommand=self.scrollbar.set)
-            
-            def on_mousewheel(event):
-                content_height = self.scrollable_frame.winfo_reqheight()
-                canvas_height = self.canvas.winfo_height()
-                
-                if content_height > canvas_height:
-                    self.canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+        self.canvas = tk.Canvas(scroll_container, bg=bg_main, highlightthickness=0)
+        self.canvas.pack(side="left", fill="both", expand=True)
+        
+        self.scrollbar = tk.Scrollbar(scroll_container, orient="vertical", command=self.canvas.yview)
+        # Scrollbar akan di-pack secara dinamis melalui helper di bawah
+        
+        self.scrollable_frame = tk.Frame(self.canvas, bg=bg_main)
+        
+        # Canvas Window dibuat tanpa mengunci nilai width (mengikuti lebar canvas)
+        self.canvas_window = self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw") 
+        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+        
+        # --- EVENT BINDING UNTUK LAYOUT RESPONSIVE & FULL WIDTH ---
+        self.scrollable_frame.bind("<Configure>", self.on_frame_configure)
+        self.canvas.bind("<Configure>", self.on_canvas_configure)
+        self.canvas.bind_all("<MouseWheel>", self.on_mousewheel)
 
-            self.canvas.bind_all("<MouseWheel>", on_mousewheel)
-            
+    # --- HELPER SYSTEM RESPONSIVE & SCROLLBAR ---
+    def on_frame_configure(self, event):
+        # Membaca bounding box seluruh konten secara dinamis tanpa hardcode angka 650
+        bbox = self.canvas.bbox("all")
+        self.canvas.configure(scrollregion=bbox)
+        
+        content_height = bbox[3] - bbox[1]
+        canvas_height = self.canvas.winfo_height()
+        
+        # Hilangkan atau munculkan scrollbar otomatis berdasarkan tinggi konten
+        if content_height <= canvas_height:
+            self.scrollbar.pack_forget()
+            self.has_scroll = False
+        else:
             self.scrollbar.pack(side="right", fill="y")
-            self.canvas.pack(side="left", fill="both", expand=True, padx=10, pady=10)
+            self.has_scroll = True
+
+    def on_canvas_configure(self, event):
+        # KUNCI UTAMA: Mengubah lebar scrollable_frame mengikuti lebar canvas saat layar melebar
+        self.canvas.itemconfig(self.canvas_window, width=event.width)
+
+    def on_mousewheel(self, event):
+        # Scroll hanya aktif jika konten memang melebihi kapasitas layar
+        if self.canvas.winfo_exists() and getattr(self, 'has_scroll', False):
+            self.canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
 
     def load_saved_posts(self):
         for widget in self.scrollable_frame.winfo_children():
@@ -72,10 +93,10 @@ class SavedPostFrame(tk.Frame):
                 self.scrollable_frame, 
                 text="🗂️ Belum ada postingan yang disimpan.", 
                 font=("Poppins", 11, "italic"), 
-                bg=bg_white, 
+                bg=bg_main, 
                 fg=text_muted
             )
-            lbl_empty.pack(pady=40, expand=True)
+            lbl_empty.pack(pady=40, fill="x", expand=True)
             return
 
         for post in saved_posts_list:

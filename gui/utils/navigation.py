@@ -42,9 +42,9 @@ def render_role_sidebar(current_frame, current_user, active_title="Home"):
 
     nav_items = [
         {"title": "Home", "comand": go_home, "active": active_title == "Home"},
-        {"title": "Saved Post", "comand": go_saved_post, "active": active_title == "Saved_Post"},
         {"title": "Comunity", "comand": go_comunity, "active": active_title == "Comunity"},
-        {"title": "Notification", "comand": go_notification, "active": active_title == "Notification"}
+        {"title": "Notification", "comand": go_notification, "active": active_title == "Notification"},
+        {"title": "Saved Post", "comand": go_saved_post, "active": active_title == "Saved_Post"}
     ]
     
     if current_user.role == "moderator":            

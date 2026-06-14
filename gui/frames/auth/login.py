@@ -39,6 +39,12 @@ class LoginFrame(tk.Frame):
                 RegisterFrame, 
                 auth_success=self.master.auth_success
             )
+            
+        def toggle_password():
+            if var_show.get() == 1:
+                self.ent_password.config(show="")
+            else:
+                self.ent_password.config(show="*")
                 
         form_frame = tk.Frame(self, bg=bg_white)
         form_frame.pack(expand=True, ipadx=24)
@@ -53,8 +59,20 @@ class LoginFrame(tk.Frame):
         self.ent_password = tk.Entry(form_frame, show="*", width=45, bd=1, relief="solid")
         self.ent_password.pack(ipady=4)
         
+        var_show = tk.IntVar()
+        chk_show = tk.Checkbutton(
+            form_frame, 
+            text="Show Password", 
+            variable=var_show, 
+            command=toggle_password,
+            bg=bg_white,
+            activebackground=bg_white,
+            font=("Poppins", 8)
+        )
+        chk_show.pack(anchor="w", padx=20, pady=(5, 0))
+        
         btn_login = tk.Button(form_frame, text="LOGIN", command=login, width=38, bg=bg_primary, foreground=bg_white, height=2, font=("Poppins", 9, "bold"))
-        btn_login.pack(pady=(30))
+        btn_login.pack(pady=(20)) # Dikurangi dari 30 ke 20 agar layout tetap rapi
         btn_login.bind("<Enter>", btn_on_enter)
         btn_login.bind("<Leave>", btn_on_leave)
 
