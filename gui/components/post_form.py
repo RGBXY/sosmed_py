@@ -1,13 +1,14 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from constrants import *
-from logic import Comunity_Logic, Post_Logic
+from logic import Comunity_Logic, Post_Logic, Sensor_Logic
 
 def PostForm(parent, current_user, edit_post_data, on_submit):    
     # Main Card Container 
     user_data = current_user
     comunities = Comunity_Logic()
     posts = Post_Logic()
+    sensor = Sensor_Logic()
     edit_data = edit_post_data
 
     card = tk.Frame(
@@ -89,7 +90,7 @@ def PostForm(parent, current_user, edit_post_data, on_submit):
     def submit_post():
         user_id = current_user.id
         comunity_id = get_comunity_id()
-        content = ent_contents.get("1.0", tk.END).strip()   
+        content = sensor.sensor_teks(ent_contents.get("1.0", tk.END), user_id)
 
         res = posts.create_posts_logic(user_id, comunity_id, content)
 
@@ -104,7 +105,7 @@ def PostForm(parent, current_user, edit_post_data, on_submit):
     def edit_post():
         post_id = edit_data.id
         comunity_id = get_comunity_id()
-        content = ent_contents.get("1.0", tk.END).strip()   
+        content = sensor.sensor_teks(ent_contents.get("1.0", tk.END))   
 
         res = posts.edit_post_logic(post_id, content, comunity_id)
 

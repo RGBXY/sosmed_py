@@ -1,13 +1,14 @@
 import tkinter as tk
 from tkinter import messagebox, simpledialog
+from logic import Like_Logic, Comment_Logic, Saved_Post_Logic, Follow_Logic, Sensor_Logic
 from constrants import *
-from logic import Like_Logic, Comment_Logic, Saved_Post_Logic, Follow_Logic
 
 def CreatePostCard(parent, post_data, current_user, on_liked, on_delete_callback=None, edit_callback=None):   
     likes = Like_Logic()
     comment_backend = Comment_Logic() 
     saved_backend = Saved_Post_Logic() 
     follow_backend = Follow_Logic() 
+    sensor = Sensor_Logic()
         
     initial_count = post_data.total_likes
     already_liked = post_data.is_liked_by_me 
@@ -94,7 +95,8 @@ def CreatePostCard(parent, post_data, current_user, on_liked, on_delete_callback
             messagebox.showerror(res["message"][0], res["message"][1])
 
     def submit_comment(entry_widget):
-        comment_text = entry_widget.get().strip()
+        user_id = current_user.id
+        comment_text = sensor.sensor_teks(entry_widget.get(), user_id)
         if not comment_text or comment_text == "Tulis komentar...":
             messagebox.showwarning("Peringatan", "Komentar tidak boleh kosong!")
             return

@@ -94,3 +94,15 @@ class NotificationData:
             data["created_at"],
             data["sender_username"] if "sender_username" in data.keys() else None
         )
+    
+class Badwords:
+     def __init__(self, id, word):
+        self.id = id
+        self.word = word
+
+     @staticmethod
+     def convert(data):
+        return Badwords(
+            data["id"],
+            data["word"],
+        )

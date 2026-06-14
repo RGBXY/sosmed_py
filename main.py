@@ -1,9 +1,10 @@
 import tkinter as tk
-from data import init_db, register_user_auth
+from data import init_db
+from logic import Sensor_Logic
 from gui.frames.auth.login import LoginFrame
 from gui.frames.home import HomeFrame
 from gui.frames.admin.dashboard_admin import DashboardAdminFrame
-from gui.frames.moderator.dashboard_moderator import DashboardModerator
+from gui.frames.moderator.dashboard_moderator import DashboardModeratorFrame
 
 class Main(tk.Tk):
     def __init__(self):
@@ -11,10 +12,14 @@ class Main(tk.Tk):
         self.state("zoomed")
         self.title("Social Media")
         init_db()
-        
+
+        self.sensor = Sensor_Logic()
+
         self.current_user = None
         self.current_frame = None
+
         self.open_login()
+        self.sensor.get_badwords_sensor_logic()
         
     # Roting Function
     def switch_frame(self, frame_class, **kwargs):
@@ -40,7 +45,7 @@ class Main(tk.Tk):
             self.switch_frame(HomeFrame, current_user=self.current_user)
             
         elif user.role == "moderator":
-            self.switch_frame(DashboardModerator, current_user=self.current_user)
+            self.switch_frame(DashboardModeratorFrame, current_user=self.current_user)
 
         elif user.role == "admin":
             self.switch_frame(DashboardAdminFrame, current_user=self.current_user)        

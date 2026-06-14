@@ -1,9 +1,59 @@
 import sqlite3
+import csv
+import os
 
 def get_db():
     conn = sqlite3.connect("./database/database.db")
     conn.row_factory = sqlite3.Row
     return conn
+
+# def import_csv_to_sqlite():
+#     csv_file = "abusive.csv"
+    
+#     if not os.path.exists(csv_file):
+#         print(f"Error: File {csv_file} tidak ditemukan!")
+#         return
+
+#     conn = get_db()
+#     cursor = conn.cursor()
+
+#     # Buat tabel jika belum ada
+#     
+    
+#     print("Membaca file CSV dan memasukkan data ke SQLite...")
+    
+#     count = 0
+#     try:
+#         with open(csv_file, mode="r", encoding="utf-8-sig") as f:
+#             reader = csv.reader(f)
+            
+#             # Skip header jika baris pertama adalah 'ABUSIVE'
+#             header = next(reader, None)
+            
+#             # Siapkan list untuk batch insert agar prosesnya cepat
+#             words_to_insert = []
+            
+#             for row in reader:
+#                 if row:
+#                     word = row[0].strip().lower()
+#                     if word:
+#                         words_to_insert.append((word,))
+            
+#             # Gunakan INSERT OR IGNORE supaya kalau ada kata yang duplikat tidak bikin crash
+#             cursor.executemany("INSERT OR IGNORE INTO badwords (word) VALUES (?)", words_to_insert)
+#             conn.commit()
+            
+#             # Hitung jumlah data yang berhasil masuk
+#             cursor.execute("SELECT COUNT(*) FROM badwords")
+#             count = cursor.fetchone()[0]
+            
+#         print(f"Sukses! Total ada {count} kata kasar berhasil disimpan di SQLite.")
+        
+#     except Exception as e:
+#         print(f"Terjadi kesalahan saat import data: {e}")
+#         conn.rollback()
+#     finally:
+#         conn.close()    
 
 def init_db():
     conn = get_db()
@@ -110,6 +160,21 @@ def init_db():
             FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
         )""")
     
+    # Create table badword
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS badwords (
+             id INTEGER PRIMARY KEY AUTOINCREMENT,
+             word TEXT UNIQUE NOT NULL
+        )""")
+    
+    # Create table user_violation_logs
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS user_violation_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )""")
+    
     check_user = conn.execute("SELECT COUNT(*) FROM users").fetchone()
     if check_user[0] == 0:
         data_users = [
@@ -125,6 +190,8 @@ def init_db():
         conn.commit()
         
     conn.close()
+
+    # import_csv_to_sqlite()
 
 # User
 def cheack_if_user_exist(conn, username):
@@ -675,3 +742,137 @@ def get_following_count(user_id):
         return 0
     finally:
         conn.close()
+
+# Badwords
+def get_badwords():
+    conn = get_db()
+
+    badwords = conn.execute("SELECT * FROM badwords").fetchall()
+
+    conn.close()
+    return badwords
+
+def create_badwords(word):
+    conn = get_db()
+
+    check = conn.execute("SELECT 1 FROM badwords WHERE word=?", (word,)).fetchone()
+    
+    if check:
+        conn.close()
+        return "word_exist"
+    else:
+        conn.execute("INSERT INTO badwords (word) VALUES (?)", (word,))
+        conn.commit()
+
+        conn.close()
+        return True
+
+def update_badwords(id, word):
+    conn = get_db()
+
+    check_duplicate = conn.execute(
+        "SELECT id FROM badwords WHERE id = ? AND id != ?", 
+        (word, id)
+    ).fetchone()
+    
+    if check_duplicate:
+        conn.close()
+        return "word_exist"
+    else:
+        conn.execute("UPDATE badwords SET word = ? WHERE id = ?", (word, id))
+        conn.commit()
+
+        conn.close()
+        return True
+
+def delete_badword(id):
+    conn = get_db()
+
+    conn.execute("DELETE FROM badwords WHERE id = ?", (id,))
+    conn.commit()
+
+    conn.close()
+    return True
+
+# Log User User Violation Logs
+def create_logs_user(user_id):
+    conn = get_db()
+
+    conn.execute("INSERT INTO user_violation_logs (user_id) VALUES (?)", (user_id,))
+    conn.commit()
+
+    conn.close()
+    return True
+
+
+# Dashboard
+
+# Tambahkan fungsi ini di dalam file database Anda (misal: db.py)
+def get_dashboard_metrics():
+    """
+    Mengambil semua data metrik ringkasan untuk dashboard admin
+    Mencakup: Total Users, Total Communities, Total Posts, dan Total Violations
+    """
+    conn = get_db()
+    metrics = {
+        "total_users": 0,
+        "total_communities": 0,
+        "total_posts": 0,
+        "total_violations": 0
+    }
+    try:
+        metrics["total_users"] = conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+        metrics["total_communities"] = conn.execute("SELECT COUNT(*) FROM comunities").fetchone()[0]
+        metrics["total_posts"] = conn.execute("SELECT COUNT(*) FROM posts").fetchone()[0]
+        metrics["total_violations"] = conn.execute("SELECT COUNT(*) FROM user_violation_logs").fetchone()[0]
+    except Exception as e:
+        print(f"Error fetching dashboard metrics: {e}")
+    finally:
+        conn.close()
+        
+    return metrics
+
+
+def get_recent_violations(limit=5):
+    """
+    Mengambil log pelanggaran kata kasar terbaru beserta nama usernya
+    """
+    conn = get_db()
+    logs = []
+    try:
+        query = """
+            SELECT v.id, u.username, v.created_at 
+            FROM user_violation_logs v
+            JOIN users u ON v.user_id = u.id
+            ORDER BY v.created_at DESC 
+            LIMIT ?
+        """
+        logs = conn.execute(query, (limit,)).fetchall()
+    except Exception as e:
+        print(f"Error fetching recent violations: {e}")
+    finally:
+        conn.close()
+        
+    return logs
+
+
+def clear_all_violation_logs():
+    """
+    Menghapus seluruh data pada tabel log pelanggaran
+    """
+    conn = get_db()
+    try:
+        conn.execute("DELETE FROM user_violation_logs")
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"Error clearing violation logs: {e}")
+        return False
+    finally:
+        conn.close()
+
+
+
+
+
+

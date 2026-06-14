@@ -21,8 +21,8 @@ def render_role_sidebar(current_frame, current_user, active_title="Home"):
         master.switch_frame(NotificationFrame, current_user=current_user)
 
     def go_dashboard_moderator():
-        from gui.frames.moderator.dashboard_moderator import DashboardModerator
-        master.switch_frame(DashboardModerator, current_user=current_user)
+        from gui.frames.moderator.dashboard_moderator import DashboardModeratorFrame    
+        master.switch_frame(DashboardModeratorFrame , current_user=current_user)
         
     def go_dashboard_admin():
         from gui.frames.admin.dashboard_admin import DashboardAdminFrame
@@ -34,16 +34,25 @@ def render_role_sidebar(current_frame, current_user, active_title="Home"):
 
     def go_comunity_management():
         from gui.frames.moderator.comunity_management import CommunityManagementFrame
-        master.switch_frame(CommunityManagementFrame, current_user=current_user)           
+        master.switch_frame(CommunityManagementFrame, current_user=current_user)      
+
+    def go_badword_management():
+        from gui.frames.moderator.badword_management import BadwordManagementFrame
+        master.switch_frame(BadwordManagementFrame, current_user=current_user)           
 
     nav_items = [
         {"title": "Home", "comand": go_home, "active": active_title == "Home"},
         {"title": "Saved Post", "comand": go_saved_post, "active": active_title == "Saved_Post"},
         {"title": "Comunity", "comand": go_comunity, "active": active_title == "Comunity"},
-        {"title": "Notification", "comand": go_notification, "active": active_title == "Notif"}
+        {"title": "Notification", "comand": go_notification, "active": active_title == "Notification"}
     ]
     
     if current_user.role == "moderator":            
+        nav_items.insert(0, {
+            "title": "Badword Management", 
+            "comand": go_badword_management, 
+            "active": active_title == "Badword_Management"
+        })
         nav_items.insert(0, {
             "title": "Comunity Management", 
             "comand": go_comunity_management, 
@@ -55,6 +64,11 @@ def render_role_sidebar(current_frame, current_user, active_title="Home"):
             "active": active_title == "Dashboard_Moderator"
         })
     elif current_user.role == "admin":
+        nav_items.insert(0, {
+            "title": "Badword Management", 
+            "comand": go_badword_management, 
+            "active": active_title == "Badword_Management"
+        })
         nav_items.insert(0, {
             "title": "Comunity Management", 
             "comand": go_comunity_management, 

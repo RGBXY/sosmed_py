@@ -469,3 +469,125 @@ class Notification_Logic:
         conn.close()
         return {"status": "Success"}
     
+# logic.py
+# Pastikan fungsi database asli Anda sudah diganti ke bahasa Inggris / disesuaikan
+
+class Badword_Logic:
+    def __init__(self, sensor_instance):
+        # Kita butuh oper instance Sensor_Logic supaya bisa panggil refresh_badwords_cache()
+        self.sensor = sensor_instance
+
+    def get_badwords_logic(self):
+        res = get_badwords()
+        badwords = [Badwords.convert(row) for row in res]
+        return badwords
+    
+    def create_badword_logic(self, word):
+        if not word or not len(word.strip()):
+            return {
+                "status": "Error",
+                "message": ("Error", "Data tidak boleh kosong")
+            }
+        
+        res = create_badwords(word.strip().lower())
+
+        if res == "word_exist":
+            return {
+                "status": "Error",
+                "message": ("Error", "Data sudah ada, silakan masukkan data lain")
+            }
+                
+        self.sensor.refresh_badwords_cache()
+
+        return {
+            "status": "Success",
+            "message": ("Success", "Kata berhasil ditambahkan"),
+        }
+    
+    def update_badword_logic(self, id_badword, word):
+        if not word or not len(word.strip()):
+            return {
+                "status": "Error",
+                "message": ("Error", "Data tidak boleh kosong")
+            }
+        
+        res = update_badwords(id_badword, word.strip().lower())
+
+        if res == "word_exist":
+            return {
+                "status": "Error",
+                "message": ("Error", "Data sudah ada, silakan masukkan data lain")
+            }
+                
+        # SINKRONKAN RAM: Update cache karena ada kata diubah
+        self.sensor.refresh_badwords_cache()
+
+        return {
+            "status": "Success",
+            "message": ("Success", "Data berhasil diedit"),
+        }
+    
+    def delete_badword_logic(self, id_badword):        
+        res = delete_badword(id_badword)
+                
+        if not res:
+            return {
+                "status": "Error",
+                "message": ("Error", "Gagal menghapus data dari database")
+            }
+
+        # SINKRONKAN RAM: Update cache karena ada kata dihapus
+        self.sensor.refresh_badwords_cache()
+
+        return {
+            "status": "Success",
+            "message": ("Success", "Data berhasil dihapus"),
+        }
+        
+    
+class Sensor_Logic:
+    def __init__(self):
+        self.bad_words_chache = self.get_badwords_sensor_logic()
+        self.user_valiation = False
+
+    def get_badwords_sensor_logic(self):
+        bad_words_set = set()
+
+        res = get_badwords()
+
+        for row in res:
+            badword_dict = Badwords.convert(row)
+            kata = badword_dict.word.strip().lower()
+            bad_words_set.add(kata)
+
+        return bad_words_set
+        
+    def sensor_teks(self, teks, user_id):
+        """Fungsi sensor otomatis yang sangat cepat karena membaca dari RAM"""
+        if not teks:
+            return teks
+            
+        kata_kata = teks.split()
+        
+        for i, kata in enumerate(kata_kata):
+            # Bersihkan dari tanda baca, misal: "anjing!!" menjadi "anjing"
+            kata_bersih = "".join(char for char in kata if char.isalnum()).lower()
+            
+            # Pengecekan instan di RAM O(1)
+            if kata_bersih in self.bad_words_chache:
+                sensor = "*" * len(kata_bersih)
+                kata_kata[i] = kata.lower().replace(kata_bersih, sensor)
+                self.user_valiation = True
+
+        if self.user_valiation:
+            create_logs_user(user_id)
+            return " ".join(kata_kata)
+        
+        self.user_valiation = False
+
+    def refresh_badwords_cache(self):
+        """Fungsi pembantu jika nanti Admin menambahkan kata baru melalui GUI, 
+        panggil fungsi ini agar RAM ikut ter-update tanpa restart aplikasi"""
+        self.bad_words_chache = self.get_badwords_sensor_logic()
+
+    
