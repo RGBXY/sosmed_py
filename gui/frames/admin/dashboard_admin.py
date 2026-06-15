@@ -15,7 +15,7 @@ from logic import (
     clear_all_violation_logs,
     get_user_activity_summary,
     export_metrics_to_csv,
-    User_Profile # Kelas backend untuk memproses perubahan username dan delete user
+    User_Profile 
 )
 
 class DashboardAdminFrame(tk.Frame):
@@ -91,117 +91,10 @@ class DashboardAdminFrame(tk.Frame):
         self.notebook = ttk.Notebook(self.content_frame)
         self.notebook.pack(fill="both", expand=True, pady=(10, 0))
 
-        # --- TAB 1: LOG PELANGGARAN & CONTROL PANEL (Fungsi Lama) ---
-        self.tab_violations = tk.Frame(self.notebook, bg=bg_white, pady=15)
-        self.notebook.add(self.tab_violations, text=" 🔒 Badwords Log & Kontrol ")
-        self.build_tab_violations_content()
-
         # --- TAB 4: USER ACTIVITY SUMMARY (Fungsi Baru) ---
         self.tab_activity = tk.Frame(self.notebook, bg=bg_white, pady=15)
         self.notebook.add(self.tab_activity, text=" 👥 Aktivitas User ")
-        self.build_tab_activity_content()
-
-    # =========================================================================
-    # KONTEN TAB 1: LOG PELANGGARAN & PANEL KONTROL
-    # =========================================================================
-    def build_tab_violations_content(self):
-        recent_logs = get_recent_violations(limit=5)
-
-        grid_container = tk.Frame(self.tab_violations, bg=bg_white)
-        grid_container.pack(fill="both", expand=True)
-        
-        left_col = tk.Frame(grid_container, bg=bg_white)
-        left_col.pack(side="left", fill="both", expand=True, padx=(0, 20))
-        self.build_violations_table(left_col, recent_logs)
-        
-        right_col = tk.Frame(grid_container, bg=bg_white)
-        right_col.pack(side="right", fill="y", anchor="n")
-        self.build_quick_actions_panel(right_col)
-
-    def build_violations_table(self, parent_frame, recent_logs):
-        lbl_table_title = tk.Label(parent_frame, text="🔒 5 Pelanggaran Terakhir (Badwords Log)", 
-                                   font=("Poppins", 11, "bold"), fg=text_dark, bg=bg_white)
-        lbl_table_title.pack(anchor="w", pady=(0, 10))
-        
-        table_border_frame = tk.Frame(parent_frame, bg=bg_white, highlightthickness=1, highlightbackground="#E5E7EB")
-        table_border_frame.pack(fill="both", expand=True)
-        
-        style = ttk.Style()
-        style.configure("Treeview.Heading", background=bg_primary, foreground=bg_white, font=("Poppins", 9, "bold"), bd=0, relief="flat")
-        style.configure("Treeview", background=bg_white, foreground=text_dark, fieldbackground=bg_white, rowheight=32, font=("Poppins", 9))
-        style.map("Treeview", background=[("selected", bg_secondary)])
-        
-        # 1. TAMBAHKAN "user_id" ke dalam tuple columns
-        columns = ("id", "username", "timestamp", "user_id")
-        self.tree = ttk.Treeview(table_border_frame, columns=columns, show="headings", selectmode="browse")
-        
-        self.tree.heading("id", text="LOG ID")
-        self.tree.heading("username", text="USERNAME PELANGGAR")
-        self.tree.heading("timestamp", text="WAKTU KEJADIAN")
-        # Tidak perlu membuat heading untuk user_id jika ingin disembunyikan
-        
-        self.tree.column("id", width=70, anchor="center")
-        self.tree.column("username", width=160, anchor="w")
-        self.tree.column("timestamp", width=200, anchor="center")
-        
-        # 2. SEMBUNYIKAN KOLOM USER_ID (Atur width=0 dan stretch=False)
-        self.tree.column("user_id", width=0, stretch=False) 
-        
-        # 3. MASUKKAN DATA USER_ID KE VALUES
-        # Catatan: Pastikan fungsi backend `get_recent_violations()` Anda sudah mengembalikan data user_id/id_user ya!
-        for row in recent_logs:
-            if isinstance(row, dict):
-                self.tree.insert("", "end", values=(row["id"], row["username"], row["created_at"], row.get("user_id", "")))
-            else:
-                # Jika formatnya tuple/list, sesuaikan indeksnya (misal indeks ke-3 adalah user_id)
-                self.tree.insert("", "end", values=(row[0], row[1], row[2], row[3]))
-            
-        scrollbar = ttk.Scrollbar(table_border_frame, orient="vertical", command=self.tree.yview)
-        self.tree.configure(yscrollcommand=scrollbar.set)
-        
-        scrollbar.pack(side="right", fill="y")
-        self.tree.pack(fill="both", expand=True, padx=1, pady=1)
-
-        self.tree.bind("<<TreeviewSelect>>", self.on_table_row_selected)
-
-    def build_quick_actions_panel(self, parent_frame):
-        lbl_action_title = tk.Label(parent_frame, text="🛠️ Panel Kontrol", 
-                                    font=("Poppins", 11, "bold"), fg=text_dark, bg=bg_white)
-        lbl_action_title.pack(anchor="w", pady=(0, 10))
-        
-        panel_card = tk.Frame(parent_frame, bg=bg_white, highlightthickness=1, highlightbackground="#E5E7EB", padx=15, pady=15)
-        panel_card.pack(fill="x", anchor="n")
-        
-        lbl_desc = tk.Label(panel_card, text="Pintasan utilitas sistem untuk memantau data secara real-time.", 
-                            font=("Poppins", 8), fg="#6B7280", bg=bg_white, wraplength=180, justify="left")
-        lbl_desc.pack(anchor="w", pady=(0, 15))
-        
-        btn_refresh = tk.Button(panel_card, text="🔄   Refresh Semua Data", font=("Poppins", 9, "bold"),
-                                bg="#3B82F6", fg="white", activebackground="#2563EB", activeforeground="white",
-                                bd=0, height=2, cursor="hand2", command=self.refresh_dashboard)
-        btn_refresh.pack(fill="x", pady=(0, 10))
-
-        btn_export = tk.Button(panel_card, text="📊   Export Logs to CSV", font=("Poppins", 9, "bold"),
-                               bg="#10B981", fg="white", activebackground="#059669", activeforeground="white",
-                               bd=0, height=2, cursor="hand2", command=self.export_to_csv)
-        btn_export.pack(fill="x", pady=(0, 10))
-        
-        btn_clear_logs = tk.Button(panel_card, text="🗑️   Clear Badword Logs", font=("Poppins", 9, "bold"),
-                                   bg="#FEE2E2", fg="#EF4444", activebackground="#FCA5A5", activeforeground="#991B1B",
-                                   bd=0, height=2, cursor="hand2", command=self.clear_logs)
-        btn_clear_logs.pack(fill="x", pady=(0, 10))   
-
-        separator = tk.Frame(panel_card, bg="#E5E7EB", height=1)
-        separator.pack(fill="x", pady=8)
-
-        self.lbl_target_info = tk.Label(panel_card, text="Pilih user pada tabel untuk mengelola", 
-                                        font=("Poppins", 8, "italic"), fg="#9CA3AF", bg=bg_white)
-        self.lbl_target_info.pack(anchor="w", pady=(5, 10))
-
-        self.btn_delete_account = tk.Button(panel_card, text="❌   Hapus Akun Pelanggar", font=("Poppins", 9, "bold"),
-                                       bg="#FFF7ED", fg="#EA580C", activebackground="#FFEDD5", activeforeground="#C2410C",
-                                       bd=0, height=2, state="disabled", command=self.aksi_hapus_akun_target)
-        self.btn_delete_account.pack(fill="x")
+        self.build_tab_activity_content()    
 
     # =========================================================================
     # KONTEN TAB 4: USER ACTIVITY SUMMARY (Fungsi Baru)

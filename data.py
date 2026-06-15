@@ -247,9 +247,7 @@ def register_admin(username, password, role):
 
 def edit_user(id, username, password, role):
     conn = get_db()
-
-    # Pengecekan duplikasi: Cari tahu apakah ada USER LAIN yang memakai username ini
-    # Jika ada user lain (ID berbeda) yang memakai username ini, maka block!
+    
     check_duplicate = conn.execute(
         "SELECT id FROM users WHERE username = ? AND id != ?", 
         (username, id)
@@ -257,16 +255,14 @@ def edit_user(id, username, password, role):
     
     if check_duplicate:
         conn.close()
-        return "username_exist"  # Ubah jadi username_exist agar sinkron dengan logic kamu
+        return "username_exist" 
 
-    # Jika admin mengetikkan password baru (password tidak kosong)
     if password and len(password.strip()) > 0:
         conn.execute(
             "UPDATE users SET username=?, password=?, role=? WHERE id=?", 
             (username, password, role, id)
         )
     else:
-        # Jika password kosong, UPDATE TANPA mengubah password lama user di DB
         conn.execute(
             "UPDATE users SET username=?, role=? WHERE id=?", 
             (username, role, id)
@@ -364,7 +360,6 @@ def get_comunity():
 def get_comunity_post(id, current_user_id):
     conn = get_db()
 
-    # Gabungkan logika filter komunitas langsung ke query yang lengkap
     data_posts = conn.execute("""
         SELECT 
             posts.id, 
@@ -403,11 +398,10 @@ def get_comunity_post(id, current_user_id):
         GROUP BY posts.id
         
         ORDER BY feed_score DESC;
-    """, (current_user_id, current_user_id, current_user_id, id)).fetchmany(10) # PENTING: Tambahkan 'id' di tuple parameter paling belakang
+    """, (current_user_id, current_user_id, current_user_id, id)).fetchmany(10)
 
     conn.close()
     
-    # Kembalikan data_posts yang sudah difilter dan di-sorting berdasarkan score
     return data_posts
 
 # Post
@@ -459,7 +453,7 @@ def get_post(current_user_id):
         GROUP BY posts.id
         
         ORDER BY feed_score DESC;
-    """, (current_user_id, current_user_id, current_user_id)).fetchmany(10) # Parameter ditambah 1 untuk subquery follows
+    """, (current_user_id, current_user_id, current_user_id)).fetchmany(10)
 
     conn.close()
     return data_posts
@@ -901,7 +895,7 @@ def get_user_activity_summary():
 def export_metrics_to_csv(metric_type, filename):
     """
     Fungsi utilitas untuk mengekspor metrik dashboard ke file CSV.
-    metric_type pilihan: 'engagement', 'activity', atau 'communities'
+    metric_type pilihan: 'activity'
     """
     try:
         if os.path.dirname(filename):

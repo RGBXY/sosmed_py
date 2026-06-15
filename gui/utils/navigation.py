@@ -38,7 +38,11 @@ def render_role_sidebar(current_frame, current_user, active_title="Home"):
 
     def go_badword_management():
         from gui.frames.moderator.badword_management import BadwordManagementFrame
-        master.switch_frame(BadwordManagementFrame, current_user=current_user)           
+        master.switch_frame(BadwordManagementFrame, current_user=current_user)        
+           
+    def go_user_valiation():
+        from gui.frames.moderator.user_log_valiation import ViolationsManagementFrame
+        master.switch_frame(ViolationsManagementFrame, current_user=current_user)           
 
     nav_items = [
         {"title": "Home", "comand": go_home, "active": active_title == "Home"},
@@ -48,6 +52,11 @@ def render_role_sidebar(current_frame, current_user, active_title="Home"):
     ]
     
     if current_user.role == "moderator":            
+        nav_items.insert(0, {
+            "title": "User Valiation", 
+            "comand": go_user_valiation, 
+            "active": active_title == "User_Valiation_Management"
+        })
         nav_items.insert(0, {
             "title": "Badword Management", 
             "comand": go_badword_management, 
@@ -64,6 +73,11 @@ def render_role_sidebar(current_frame, current_user, active_title="Home"):
             "active": active_title == "Dashboard_Moderator"
         })
     elif current_user.role == "admin":
+        nav_items.insert(0, {
+            "title": "User Valiation", 
+            "comand": go_user_valiation, 
+            "active": active_title == "User_Valiation_Management"
+        })
         nav_items.insert(0, {
             "title": "Badword Management", 
             "comand": go_badword_management, 
