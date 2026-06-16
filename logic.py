@@ -3,7 +3,7 @@ from data import *
 
 class Auth:
     def login_logic(self, username, password):        
-        if not len(username) or not len(password):
+        if not username or not password:
             return {
                 "status" : "Error",
                 "message" : ("Error", "Username dan password tidak boleh kosong")
@@ -12,10 +12,10 @@ class Auth:
         if len(password) < 8:
             return {
                 "status" : "Error",
-                "message" : ("Error", "Password harus 8 karakter")
+                "message" : ("Error", "Password harus minimal 8 karakter")
             }
             
-        res = login_user_auth(username)
+        res = login_user_auth(username, password)
         
         if not res:
             return {
@@ -25,20 +25,14 @@ class Auth:
 
         user_data = User.convert(res)
             
-        if user_data.password == password.lower():
-            return {
-                "status" : "Success",
-                "message" : ("Success", "Login Berhasil"),
-                "data" : user_data
-            }
-        else:
-            return {
-                "status" : "Error",
-                "message" : ("Error", "Username atau password salah")
-            }
+        return {
+            "status" : "Success",
+            "message" : ("Success", "Login Berhasil"),
+            "data" : user_data
+        }
         
     def register_logic(self, username, password, confirm_password):
-        if not len(username) or not len(password):
+        if not username or not password:
             return {
                 "status" : "Error",
                 "message" : ("Error", "Username dan password tidak boleh kosong")
@@ -47,10 +41,10 @@ class Auth:
         if len(password) < 8:
             return {
                 "status" : "Error",
-                "message" : ("Error", "Password harus 8 karakter")
+                "message" : ("Error", "Password harus minimal 8 karakter")
             }
         
-        if not confirm_password == password :
+        if confirm_password != password:
             return {
                 "status" : "Error",
                 "message" : ("Error", "Confirm Password harus sama dengan password")
@@ -61,7 +55,7 @@ class Auth:
         if res == "username_exist":
             return {
                 "status" : "Error",
-                "message" : ("Error", f"Username {username} telah di ambil, silahkan pilih username lain")
+                "message" : ("Error", f"Username {username} telah diambil, silahkan pilih username lain")
             }
         
         user_data = User.convert(res)
@@ -72,20 +66,21 @@ class Auth:
             "data" : user_data
         }
     
-    def resgiter_admin_logic(self, username, password, role, confirm_password):
-        if not len(username) or not len(password) or not len(role):
+    # Perbaikan typo: resgiter -> register
+    def register_admin_logic(self, username, password, role, confirm_password):
+        if not username or not password or not role:
             return {
                 "status" : "Error",
-                "message" : ("Error", "Username dan password tidak boleh kosong")
+                "message" : ("Error", "Username, password, dan role tidak boleh kosong")
             }
         
         if len(password) < 8:
             return {
                 "status" : "Error",
-                "message" : ("Error", "Password harus 8 karakter")
+                "message" : ("Error", "Password harus minimal 8 karakter")
             }
         
-        if not confirm_password == password :
+        if confirm_password != password:
             return {
                 "status" : "Error",
                 "message" : ("Error", "Confirm Password harus sama dengan password")
@@ -96,23 +91,22 @@ class Auth:
         if res == "username_exist":
             return {
                 "status" : "Error",
-                "message" : ("Error", f"Username {username} telah di ambil, silahkan pilih username lain")
+                "message" : ("Error", f"Username {username} telah diambil, silahkan pilih username lain")
             }
                 
         return {
             "status" : "Success",
-            "message" : ("Success", "Register Berhasil"),
+            "message" : ("Success", "Register Admin Berhasil"),
         }
     
-    def edit_resgiter_admin_logic(self, id, username, password, role, confirm_password):
-        # Validasi username dan role tetap wajib
-        if not len(username) or not len(role):
+    # Perbaikan typo: edit_resgiter -> edit_register
+    def edit_register_admin_logic(self, id, username, password, role, confirm_password):
+        if not username or not role:
             return {
                 "status" : "Error",
                 "message" : ("Error", "Username dan Role tidak boleh kosong")
             }
         
-        # Validasi password HANYA berjalan jika admin mengetikkan sesuatu di kolom password
         if len(password) > 0:
             if len(password) < 8:
                 return {
@@ -120,13 +114,12 @@ class Auth:
                     "message" : ("Error", "Password baru harus minimal 8 karakter")
                 }
             
-            if not confirm_password == password:
+            if confirm_password != password:
                 return {
                     "status" : "Error",
                     "message" : ("Error", "Confirm Password harus sama dengan password")
                 }
         
-        # Jalankan fungsi update database
         res = edit_user(id, username, password, role)
 
         if res == "username_exist":
@@ -141,17 +134,14 @@ class Auth:
         }
     
     def get_user_logic(self):
-        res = get_user()
-
-        data_user = [User.convert(row) for row in res]
-
-        return data_user
+        res = get_users_paginated()
+        return [User.convert(row) for row in res]
 
     
 class User_Profile:
     def change_username_logic(self, current_username, new_username):
-        if not len(new_username):
-            return{
+        if not new_username:
+            return {
                 "status": "Error",
                 "message": ("Error","Data username baru tidak boleh kosong")
             }
@@ -159,234 +149,327 @@ class User_Profile:
         res = change_username(current_username, new_username)
         
         if res == "username_exist":
-            return{
+            return {
                 "status": "Error",
-                "message": ("Error","Data username baru tidak telah diambil, silahkan pilih username lain")
+                "message": ("Error","Data username baru telah diambil, silahkan pilih username lain")
             }
         
         user_data = User.convert(res)
 
-        return{
+        return {
             "status": "Success",
             "message": ("Success", "Username berhasil diganti"),
             "data": user_data
         }
      
+    def change_password_logic(self, user_id, current_password, new_password):
+        current_password = current_password.strip()
+        new_password = new_password.strip()
+
+        if not current_password or not new_password:
+            return {
+                "status": "Error",
+                "message": ("Error", "Password lama dan password baru tidak boleh kosong!")
+            }
+            
+        if len(new_password) < 8:
+            return {
+                "status": "Error",
+                "message": ("Error", "Password baru minimal harus 8 karakter!")
+            }
+
+        res = change_password(user_id, current_password, new_password)
+        
+        if res == "wrong_password":
+            return {
+                "status": "Error",
+                "message": ("Gagal", "Password lama yang Anda masukkan salah!")
+            }
+            
+        if res == "user_not_found":
+            return {
+                "status": "Error",
+                "message": ("Gagal", "Pengguna tidak ditemukan!")
+            }
+            
+        if res == "db_error":
+            return {
+                "status": "Error",
+                "message": ("Error", "Gagal memperbarui database. Silakan coba lagi.")
+            }
+
+        return {
+            "status": "Success",
+            "message": ("Sukses", "Password berhasil diganti!"),
+            "data": None
+        }
+     
     def delete_user_logic(self, id):
         if not id:
-            return{
+            return {
                 "status": "Error",
-                "message": ("Error","Data user tidak dapat ditermukan")
+                "message": ("Error","Data user tidak dapat ditemukan")
             }
         
         res = delete_user(id)
 
-        if res == True:
-            return{
+        if res:
+            return {
                 "status": "Success",
-                "message": ("Success", "Akun berhasil di hapus"),
+                "message": ("Success", "Akun berhasil dihapus"),
             }
         else:
-            return{
+            return {
                 "status": "Error",
                 "message": ("Error","Akun gagal dihapus")
             }
         
-class Comunity_Logic:
+# Perbaikan typo: Comunity -> Community
+class Community_Logic:
     def create_comunity_logic(self, user_id, name, descripition):
-        if not len(name) or not len(descripition):
-            return{
+        if not name or not descripition:
+            return {
                 "status": "Error",
                 "message": ("Error","Nama komunitas dan deskripsi tidak boleh kosong")
             }
         
-        res = create_comunity(user_id, name, descripition)
+        res = create_community(user_id, name, descripition)
 
         if res == "name_exist":
-            return{
+            return {
                 "status": "Error",
-                "message": ("Error","Nama komunitas sudah ada, silahakn cari nama lain")
+                "message": ("Error","Nama komunitas sudah ada, silahkan cari nama lain")
             }
                 
-        return{
+        return {
             "status": "Success",
             "message": ("Success", "Komunitas berhasil dibuat"),
         }
     
+    def get_community_detail_logic(self, comunity_id):
+        res = get_comunity_detail(comunity_id)
+        return Comunity.convert(res)
+    
     def update_comunity_logic(self, user_id, name, descripition):
-        if not len(name) or not len(descripition):
-            return{
+        if not name or not descripition:
+            return {
                 "status": "Error",
                 "message": ("Error","Nama komunitas dan deskripsi tidak boleh kosong")
             }
         
-        res = update_comunity(user_id, name, descripition)
+        res = update_community(user_id, name, descripition)
 
         if res == "name_exist":
-            return{
+            return {
                 "status": "Error",
-                "message": ("Error","Nama komunitas sudah ada, silahakn cari nama lain")
+                "message": ("Error","Nama komunitas sudah ada, silahkan cari nama lain")
             }
                 
-        return{
+        return {
             "status": "Success",
             "message": ("Success", "Komunitas berhasil diedit"),
         }
     
     def get_comunity_logic(self):
-        res = get_comunity()
-
-        data_comunity = [Comunity.convert(row) for row in res]
-
-        return data_comunity
+        res = get_comunities()
+        return [Comunity.convert(row) for row in res]
     
     def delete_comunity_logic(self, id):
-        res = delete_comunity(id)
+        res = delete_community(id)
 
-        if res == True:
-            return{
+        if res:
+            return {
                 "status": "Success",
-                "message": ("Success", "Data berhasil di hapus")
+                "message": ("Success", "Data berhasil dihapus")
             }
         else:
-            return{
+            return {
                 "status": "Error",
                 "message": ("Error","Data gagal dihapus")
             }
         
     def get_comunity_post_logic(self, id, current_user_id):
-        res = get_comunity_post(id, current_user_id)
+        res = get_community_post(id, current_user_id)
+        return [Post.convert(row) for row in res]    
+    
+    def join_community_logic(self, community_id, user_id):
+        if not community_id or not user_id:
+            return {
+                "status": "Error",
+                "message": ("Gagal", "Parameter data tidak valid.")
+            }
+            
+        is_member = check_membership_status(community_id, user_id)
+        if is_member:
+            return {
+                "status": "Error",
+                "message": ("Pemberitahuan", "Anda sudah bergabung dengan komunitas ini.")
+            }
+            
+        res = join_community(community_id, user_id)
+        if res:
+            return {
+                "status": "Success",
+                "message": ("Berhasil", "Selamat! Anda berhasil bergabung ke komunitas.")
+            }
+        else:
+            return {
+                "status": "Error",
+                "message": ("Error", "Terjadi kesalahan sistem database saat mencoba bergabung.")
+            }
 
-        return [Post.convert(row) for row in res]
+    def leave_community_logic(self, community_id, user_id):
+        if not community_id or not user_id:
+            return {
+                "status": "Error",
+                "message": ("Gagal", "Parameter data tidak valid.")
+            }
+
+        res = leave_community(community_id, user_id)
+        if res:
+            return {
+                "status": "Success",
+                "message": ("Berhasil", "Anda telah keluar dari komunitas ini.")
+            }
+        else:
+            return {
+                "status": "Error",
+                "message": ("Error", "Gagal keluar. Anda mungkin memang belum bergabung di grup ini.")
+            }
+
+    def check_membership_logic(self, community_id, user_id):
+        return check_membership_status(community_id, user_id)
+
+    def get_community_members_logic(self, community_id):
+        res = get_community_members(community_id)
+        return [Comunity_Member.convert(row) for row in res]    
         
 class Post_Logic:
     def create_posts_logic(self, user_id, comunity_id, content):
         if not comunity_id or not content:
-            return{
+            return {
                 "status": "Error",
-                "message": ("Error","Nama komunitas dan deskripsi tidak boleh kosong")
+                "message": ("Error","Nama komunitas dan konten tidak boleh kosong")
             }
         
         res = create_post(user_id, comunity_id, content)
 
-        if res == True:
-            return{
+        if res:
+            return {
                 "status": "Success",
-                "message": ("Success", "Post berhasil di buat")
+                "message": ("Success", "Post berhasil dibuat")
             }
         else:
-            return{
+            return {
                 "status": "Error",
                 "message": ("Error","Post gagal dibuat")
             }
         
     def get_posts_logic(self, current_user_id):
-        res = get_post(current_user_id)
-
-        data_posts = [Post.convert(row) for row in res]
-
-        return data_posts
+        res = get_global_feed(current_user_id)
+        return [Post.convert(row) for row in res]
     
     def delete_post_logic(self, id):
         res = delete_post(id)
 
-        if res == True:
-            return{
+        if res:
+            return {
                 "status": "Success",
-                "message": ("Success", "Data berhasil di hapus")
+                "message": ("Success", "Data berhasil dihapus")
             }
         else:
-            return{
+            return {
                 "status": "Error",
                 "message": ("Error","Data gagal dihapus")
             }
         
     def edit_post_logic(self, id, content, comunity_id):
         if not content or not comunity_id:
-            return{
+            return {
                 "status": "Error",
                 "message": ("Error","Data tidak boleh kosong")
             }
         
         res = update_post(id, content, comunity_id)
 
-        if res == True:
-            return{
+        if res:
+            return {
                 "status": "Success",
-                "message": ("Success", "Data berhasil di update")
+                "message": ("Success", "Data berhasil di-update")
             }
         else:
-            return{
+            return {
                 "status": "Error",
-                "message": ("Error","Data gagal di update")
+                "message": ("Error","Data gagal di-update")
             }
 
 class Like_Logic:
     def like_logic(self, user_id, post_id):
         res = like(user_id, post_id)
-        
         if res == "like":
-            return{
-                "status": "like",
-            }
+            return {"status": "like"}
         else:
-            return{
-                "status": "unlike",
-            }
+            return {"status": "unlike"}
+
 
 class Comment_Logic:
     def comments_logic(self, user_id, post_id, content):
+        # Perbaikan: Menghilangkan if ganda bersarang yang redundan
+        if not content:
+            return {
+                "status": "Error",
+                "message": ("Error","Konten komentar tidak boleh kosong")
+            }
+
         res = comment(user_id, post_id, content)
 
-        if res == True:
-            return{
+        if res:
+            return {
                 "status": "Success",
                 "message": ("Success", "Comment berhasil dibuat")
             }
         else:
-            return{
+            return {
                 "status": "Error",
-                "message": ("Error","Comment berhasil dibuat")
+                "message": ("Error","Comment gagal dibuat")
             }
         
     def get_comments_logic(self, post_id):
-        res = get_comment(post_id)
-
-        data_comments = [Comment.convert(row) for row in res]
-
-        return data_comments
+        res = get_comments(post_id)
+        return [Comment.convert(row) for row in res]
     
-    def upadate_comment_logic(self, id, content):
+    # Perbaikan typo: upadate -> update
+    def update_comment_logic(self, id, content):
         if not content:
-            if not content:
-                return{
-                    "status": "Error",
-                    "message": ("Error","Data tidak boleh kosong")
-                }
+            return {
+                "status": "Error",
+                "message": ("Error","Data tidak boleh kosong")
+            }
             
         res = update_comment(id, content)
 
-        if res == True:
-            return{
+        if res:
+            return {
                 "status": "Success",
-                "message": ("Success", "Data berhasil di update")
+                "message": ("Success", "Data berhasil di-update")
             }
         else:
-            return{
+            return {
                 "status": "Error",
-                "message": ("Error","Data gagal di update")
+                "message": ("Error","Data gagal di-update")
             }
         
     def delete_comment_logic(self, id):
         res = delete_comment(id)
 
-        if res == True:
-            return{
+        if res:
+            return {
                 "status": "Success",
-                "message": ("Success", "Data berhasil di hapus")
+                "message": ("Success", "Data berhasil dihapus")
             }
         else:
-            return{
+            # Perbaikan: Pesan error disesuaikan (sebelumnya: "Comment berhasil dibuat")
+            return {
                 "status": "Error",
                 "message": ("Error","Data gagal dihapus")
             }
@@ -394,28 +477,17 @@ class Comment_Logic:
 class Saved_Post_Logic:
     def saved_post_logic(self, user_id, post_id):
         res = saved_post(user_id, post_id)
-        
         if res == "save":
-            return{
-                "status": "save",
-            }
+            return {"status": "save"}
         else:
-            return{
-                "status": "unsave",
-            }
+            return {"status": "unsave"}
 
     def get_saved_posts_logic(self, current_user_id):
-        # Ambil data rows dari database
         res = get_saved_posts(current_user_id)
-
-        # Konversi row database menjadi list object model Post
-        data_posts = [Post.convert(row) for row in res]
-
-        return data_posts
+        return [Post.convert(row) for row in res]
     
 class Follow_Logic:
     def follow_user_logic(self, follower_id, following_id):
-        # res sekarang akan berisi "inserted", "deleted", atau "error"
         res = follow_user(follower_id, following_id)
 
         if res == "inserted":
@@ -435,13 +507,11 @@ class Follow_Logic:
             }
         
     def get_follower_count_logic(self, user_id):
-       res = get_follower_count(user_id)
-       return res
+        return get_follower_count(user_id)
 
     def get_following_count_logic(self, user_id):
-        res = get_following_count(user_id)
-        return res
-        
+        return get_following_count(user_id)
+         
 class Notification_Logic:
     def get_notifications_logic(self, user_id):
         res = get_notifications(user_id)
@@ -462,28 +532,23 @@ class Notification_Logic:
             }
 
     def delete_notification(self, notification_id):
-        # Untuk menghapus info umum setelah dibaca oleh user
         conn = get_db()
         conn.execute("DELETE FROM notifications WHERE id = ?", (notification_id,))
         conn.commit()
         conn.close()
         return {"status": "Success"}
     
-# logic.py
-# Pastikan fungsi database asli Anda sudah diganti ke bahasa Inggris / disesuaikan
 
 class Badword_Logic:
     def __init__(self, sensor_instance):
-        # Kita butuh oper instance Sensor_Logic supaya bisa panggil refresh_badwords_cache()
         self.sensor = sensor_instance
 
     def get_badwords_logic(self):
         res = get_badwords()
-        badwords = [Badwords.convert(row) for row in res]
-        return badwords
+        return [Badwords.convert(row) for row in res]
     
     def create_badword_logic(self, word):
-        if not word or not len(word.strip()):
+        if not word or not word.strip():
             return {
                 "status": "Error",
                 "message": ("Error", "Data tidak boleh kosong")
@@ -505,7 +570,7 @@ class Badword_Logic:
         }
     
     def update_badword_logic(self, id_badword, word):
-        if not word or not len(word.strip()):
+        if not word or not word.strip():
             return {
                 "status": "Error",
                 "message": ("Error", "Data tidak boleh kosong")
@@ -519,7 +584,6 @@ class Badword_Logic:
                 "message": ("Error", "Data sudah ada, silakan masukkan data lain")
             }
                 
-        # SINKRONKAN RAM: Update cache karena ada kata diubah
         self.sensor.refresh_badwords_cache()
 
         return {
@@ -536,7 +600,6 @@ class Badword_Logic:
                 "message": ("Error", "Gagal menghapus data dari database")
             }
 
-        # SINKRONKAN RAM: Update cache karena ada kata dihapus
         self.sensor.refresh_badwords_cache()
 
         return {
@@ -547,47 +610,36 @@ class Badword_Logic:
     
 class Sensor_Logic:
     def __init__(self):
-        self.bad_words_chache = self.get_badwords_sensor_logic()
-        self.user_valiation = False
+        self.bad_words_cache = self.get_badwords_sensor_logic()
 
     def get_badwords_sensor_logic(self):
         bad_words_set = set()
-
-        res = get_badwords()
-
+        res = get_badwords()  # Disarankan menggunakan fungsi khusus agar sinkron
         for row in res:
             badword_dict = Badwords.convert(row)
             kata = badword_dict.word.strip().lower()
             bad_words_set.add(kata)
-
         return bad_words_set
         
     def sensor_teks(self, teks, user_id):
-        """Fungsi sensor otomatis yang sangat cepat karena membaca dari RAM"""
         if not teks:
             return teks
             
         kata_kata = teks.split()
+        is_dirty = False  # Perbaikan: Menggunakan variabel lokal agar thread-safe
         
         for i, kata in enumerate(kata_kata):
-            # Bersihkan dari tanda baca, misal: "anjing!!" menjadi "anjing"
             kata_bersih = "".join(char for char in kata if char.isalnum()).lower()
             
-            # Pengecekan instan di RAM O(1)
-            if kata_bersih in self.bad_words_chache:
+            if kata_bersih in self.bad_words_cache:
                 sensor = "*" * len(kata_bersih)
                 kata_kata[i] = kata.lower().replace(kata_bersih, sensor)
-                self.user_valiation = True
+                is_dirty = True
 
-        if self.user_valiation:
+        if is_dirty:
             create_logs_user(user_id)
-            return " ".join(kata_kata)
         
-        self.user_valiation = False
-
+        return " ".join(kata_kata)
+        
     def refresh_badwords_cache(self):
-        """Fungsi pembantu jika nanti Admin menambahkan kata baru melalui GUI, 
-        panggil fungsi ini agar RAM ikut ter-update tanpa restart aplikasi"""
-        self.bad_words_chache = self.get_badwords_sensor_logic()
-
-    
+        self.bad_words_cache = self.get_badwords_sensor_logic()

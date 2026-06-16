@@ -1,104 +1,121 @@
-# gui/utils/navigation.py
 from gui.components.sidebar import sidebar
 
+
+# ============================================================
+# SECTION: UTILITY FUNCTIONS
+# ============================================================
 def render_role_sidebar(current_frame, current_user, active_title="Home"):
+    """Membangun daftar menu navigasi (sidebar) secara dinamis berdasarkan hak akses/role dari pengguna yang sedang aktif."""
     master = current_frame.master  
 
     def go_home():
+        """Mengalihkan window utama ke halaman Beranda (Home Frame)."""
         from gui.frames.home import HomeFrame
         master.switch_frame(HomeFrame, current_user=current_user)
 
     def go_saved_post():
+        """Mengalihkan window utama ke halaman Postingan Tersimpan (Saved Post Frame)."""
         from gui.frames.saved_post import SavedPostFrame
         master.switch_frame(SavedPostFrame, current_user=current_user)
          
     def go_comunity():
+        """Mengalihkan window utama ke halaman Daftar Komunitas (Community Frame)."""
         from gui.frames.comunity import ComunityFrame
         master.switch_frame(ComunityFrame, current_user=current_user)
         
     def go_notification():
+        """Mengalihkan window utama ke halaman Pusat Notifikasi (Notification Frame)."""
         from gui.frames.notification import NotificationFrame
         master.switch_frame(NotificationFrame, current_user=current_user)
 
     def go_dashboard_moderator():
+        """Mengalihkan window utama ke halaman Panel Utama Moderator (Dashboard Moderator Frame)."""
         from gui.frames.moderator.dashboard_moderator import DashboardModeratorFrame    
         master.switch_frame(DashboardModeratorFrame , current_user=current_user)
         
     def go_dashboard_admin():
+        """Mengalihkan window utama ke halaman Panel Utama Administrator (Dashboard Admin Frame)."""
         from gui.frames.admin.dashboard_admin import DashboardAdminFrame
         master.switch_frame(DashboardAdminFrame, current_user=current_user)
             
     def go_user_management():
+        """Mengalihkan window utama ke panel pengelolaan data user aplikasi (User Management Frame)."""
         from gui.frames.admin.user_management import UserManagementFrame
         master.switch_frame(UserManagementFrame, current_user=current_user)     
 
     def go_comunity_management():
+        """Mengalihkan window utama ke panel pengelolaan data ruang komunitas (Community Management Frame)."""
         from gui.frames.moderator.comunity_management import CommunityManagementFrame
         master.switch_frame(CommunityManagementFrame, current_user=current_user)      
 
     def go_badword_management():
+        """Mengalihkan window utama ke panel sensor kata kasar dan pemfilteran teks (Badword Management Frame)."""
         from gui.frames.moderator.badword_management import BadwordManagementFrame
-        master.switch_frame(BadwordManagementFrame, current_user=current_user)        
-           
+        master.switch_frame(BadwordManagementFrame, current_user=current_user)      
+            
     def go_user_valiation():
+        """Mengalihkan window utama ke panel validasi serta peninjauan log pelanggaran user (Violations Management Frame)."""
         from gui.frames.moderator.user_log_valiation import ViolationsManagementFrame
         master.switch_frame(ViolationsManagementFrame, current_user=current_user)           
 
+    # Menu default untuk seluruh tingkat level user
     nav_items = [
-        {"title": "Home", "comand": go_home, "active": active_title == "Home"},
-        {"title": "Comunity", "comand": go_comunity, "active": active_title == "Comunity"},
-        {"title": "Notification", "comand": go_notification, "active": active_title == "Notification"},
-        {"title": "Saved Post", "comand": go_saved_post, "active": active_title == "Saved_Post"}
+        {"title": "Beranda", "command": go_home, "active": active_title == "Home"},
+        {"title": "Komunitas", "command": go_comunity, "active": active_title == "Comunity"},
+        {"title": "Notifikasi", "command": go_notification, "active": active_title == "Notification"},
+        {"title": "Disimpan", "command": go_saved_post, "active": active_title == "Saved_Post"}
     ]
     
+    # Menu tambahan khusus jika aktor adalah Moderator
     if current_user.role == "moderator":            
         nav_items.insert(0, {
-            "title": "User Valiation", 
-            "comand": go_user_valiation, 
-            "active": active_title == "User_Valiation_Management"
+            "title": "Log Pelanggaran", 
+            "command": go_user_valiation, 
+            "active": active_title == "Violations_Management"
         })
         nav_items.insert(0, {
-            "title": "Badword Management", 
-            "comand": go_badword_management, 
+            "title": "Manajemen Kata Kasar", 
+            "command": go_badword_management, 
             "active": active_title == "Badword_Management"
         })
         nav_items.insert(0, {
-            "title": "Comunity Management", 
-            "comand": go_comunity_management, 
+            "title": "Manajemen Komunitas", 
+            "command": go_comunity_management, 
             "active": active_title == "Comunity_Management"
         })
         nav_items.insert(0, {
             "title": "Dashboard", 
-            "comand": go_dashboard_moderator, 
+            "command": go_dashboard_moderator, 
             "active": active_title == "Dashboard_Moderator"
         })
+
+    # Menu tambahan komprehensif jika aktor adalah Admin Utama
     elif current_user.role == "admin":
         nav_items.insert(0, {
-            "title": "User Valiation", 
-            "comand": go_user_valiation, 
-            "active": active_title == "User_Valiation_Management"
+            "title": "Log Pelanggaran", 
+            "command": go_user_valiation, 
+            "active": active_title == "Violations_Management"
         })
         nav_items.insert(0, {
-            "title": "Badword Management", 
-            "comand": go_badword_management, 
+            "title": "Manajemen Kata Kasar", 
+            "command": go_badword_management, 
             "active": active_title == "Badword_Management"
         })
         nav_items.insert(0, {
-            "title": "Comunity Management", 
-            "comand": go_comunity_management, 
+            "title": "Manajemen Komunitas", 
+            "command": go_comunity_management, 
             "active": active_title == "Comunity_Management"
         })
         nav_items.insert(0, {
-            "title": "User Management", 
-            "comand": go_user_management, 
+            "title": "Manajemen Pengguna", 
+            "command": go_user_management, 
             "active": active_title == "User_Management"
         })
         nav_items.insert(0, {
             "title": "Dashboard", 
-            "comand": go_dashboard_admin, 
+            "command": go_dashboard_admin, 
             "active": active_title == "Dashboard_Admin"
-        },)   
-       
-       
-
+        })   
+        
+    # Render komponen visual sidebar dengan data menu yang sudah terstruktur
     sidebar(current_frame, current_user, nav_items)

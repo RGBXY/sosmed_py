@@ -1,81 +1,125 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from constrants import *
-from logic import Comunity_Logic, Post_Logic, Sensor_Logic
+from logic import Community_Logic, Post_Logic, Sensor_Logic
 
+
+# ============================================================
+# SECTION: GUI COMPONENTS & FACTORIES
+# ============================================================
 def PostForm(parent, current_user, edit_post_data, on_submit):    
+    """Membuat form kartu pembuatan dan pengeditan postingan komunitas."""
     # Inisialisasi Backend & Utilitas
-    comunities = Comunity_Logic()
+    comunities = Community_Logic()
     posts = Post_Logic()
     sensor = Sensor_Logic()
     
     # State ID untuk mode edit (jika ada)
     selected_post_id = edit_post_data.id if edit_post_data else None
 
-    # Main Card Container (Disamakan dengan form_card milik ComunityFrame)
+    # Main Card Container Minimalis & Elegan
     form_card = tk.Frame(
         parent, 
         bg=bg_white, 
         highlightbackground=border_col, 
         highlightthickness=1,
         padx=20,
-        pady=20
+        pady=18
     )
-    form_card.pack(fill="x", padx=20, pady=15)
+    form_card.pack(fill="x", padx=20, pady=(10, 15))
     
-    # Title Form Dinamis sesuai Mode
+    # Header Status Form
     lbl_form_title = tk.Label(
         form_card, 
-        text="Edit Postingan Konten" if edit_post_data else "Buat Postingan Baru", 
+        text="✏️  Edit Post" if edit_post_data else "Buat Post", 
         font=("Poppins", 11, "bold"), 
         bg=bg_white, 
-        fg=bg_primary
+        fg=text_dark
     )
-    lbl_form_title.pack(anchor="w", pady=(0, 15))
+    lbl_form_title.pack(anchor="w", pady=(0, 12))
     
-    # Input Grid Container
-    input_grid = tk.Frame(form_card, bg=bg_white)
-    input_grid.pack(fill="x")
+    # DROPDOWN PILIH KOMUNITAS
+    dropdown_label = tk.Label(form_card, text="Pilih Komunitas", font=("Poppins", 8, "bold"), bg=bg_white, fg=text_muted)
+    dropdown_label.pack(anchor="w", pady=(0, 2))
     
-    # Row 0: Pilihan Komunitas (Combobox)
-    tk.Label(input_grid, text="Pilih Komunitas", font=("Poppins", 9, "bold"), bg=bg_white, fg=text_dark).grid(row=0, column=0, sticky="w", pady=5)
-    
-    # Ambil data mapping komunitas untuk dropdown
+    # Ambil seluruh data komunitas dari database
     data_comunity = comunities.get_comunity_logic()
-    comunity_map = {row.name: row.id for row in data_comunity}
+    
+    # Filter: Hanya masukkan jika namanya 'Global Feed' ATAU user terdaftar sebagai member
+    comunity_map = {}
+    for row in data_comunity:
+        if row.name == "Global Feed" or comunities.check_membership_logic(row.id, current_user.id):
+            comunity_map[row.name] = row.id
+            
     data_comunity_name = list(comunity_map.keys())
     
-    combo_comunity = ttk.Combobox(input_grid, state="readonly", values=data_comunity_name, font=("Poppins", 10))
-    combo_comunity.grid(row=0, column=1, sticky="ew", padx=(15, 0), pady=5)
+    # Styling Tkinter Combobox via Ttk Theme
+    style = ttk.Style()
+    style.configure("TCombobox", 
+                    fieldbackground=bg_main, 
+                    background=bg_main, 
+                    bordercolor=border_col, 
+                    lightcolor=border_col, 
+                    darkcolor=border_col,
+                    arrowcolor=text_dark)
     
-    # Row 1: Konten Postingan (Text Widget dengan border modis bawaan Tkinter)
-    tk.Label(input_grid, text="Isi Postingan", font=("Poppins", 9, "bold"), bg=bg_white, fg=text_dark).grid(row=1, column=0, sticky="nw", pady=8)
+    combo_comunity = ttk.Combobox(
+        form_card, state="readonly", values=data_comunity_name, 
+        font=("Poppins", 9), style="TCombobox"
+    )
+    combo_comunity.pack(fill="x", pady=(0, 14))
     
-    # Text widget dibungkus frame agar border highlightthickness-nya identik dengan Entry
-    text_border = tk.Frame(input_grid, bg=border_col, highlightbackground=border_col, highlightthickness=1)
-    text_border.grid(row=1, column=1, sticky="ew", padx=(15, 0), pady=5)
+    # SET DEFAULT VALUE KE 'Global Feed' JIKA BUKAN MODE EDIT
+    if edit_post_data:
+        # Jika sedang mengedit, tampilkan komunitas lama bawaan postingan tersebut
+        combo_comunity.set(edit_post_data.comunity_name)
+    else:
+        # Jika buat postingan baru, otomatis arahkan ke Global Feed
+        if "Global Feed" in comunity_map:
+            combo_comunity.set("Global Feed")
     
-    ent_contents = tk.Text(text_border, height=4, font=("Poppins", 10), bg=bg_main, relief="flat", wrap="word")
-    ent_contents.pack(fill="x", padx=1, pady=1)
+    # TEXT AREA POSTINGAN WITH INTERACTIVE FOCUS 
+    text_label = tk.Label(form_card, text="Isi Post", font=("Poppins", 8, "bold"), bg=bg_white, fg=text_muted)
+    text_label.pack(anchor="w")
+    text_border = tk.Frame(form_card, bg=border_col, highlightbackground=border_col, highlightthickness=1)
+    text_border.pack(fill="x", pady=(0, 12))
     
-    # Membuat kolom input melebar secara fleksibel
-    input_grid.columnconfigure(1, weight=1)
+    ent_contents = tk.Text(
+        text_border, height=4, font=("Poppins", 10), 
+        bg=bg_main, fg=text_dark, relief="flat", wrap="word",
+        padx=10, pady=10, insertbackground=text_dark
+    )
+    ent_contents.pack(fill="x")
     
-    # Helper get ID Komunitas
+    # --- Fungsi Logika Internal ---
+    def on_focus_in(e):
+        """Mengubah warna border frame dan background teks saat elemen mendapat fokus."""
+        text_border.config(bg=text_dark, highlightbackground=text_dark)
+        ent_contents.config(bg=bg_white) 
+
+    def on_focus_out(e):
+        """Mengembalikan warna border dan background teks ke default saat kehilangan fokus."""
+        text_border.config(bg=border_col, highlightbackground=border_col)
+        ent_contents.config(bg=bg_main)
+
+    ent_contents.bind("<FocusIn>", on_focus_in)
+    ent_contents.bind("<FocusOut>", on_focus_out)
+    
     def get_comunity_id():
+        """Mengambil ID komunitas yang sedang dipilih pada elemen combobox."""
         selected_name = combo_comunity.get()
         if not selected_name:
             return None
         return comunity_map[selected_name]
 
-    # Fungsi Reset / Clear Form
     def clear_post():
+        """Mengosongkan isian text area, dropdown komunitas, dan memicu fungsi submit."""
         ent_contents.delete("1.0", tk.END)
         combo_comunity.set("")
-        on_submit() # Memicu reload feed pada HomeFrame
+        on_submit()
 
-    # Fungsi Tambah Post Baru
     def tambah_post():
+        """Memproses penyaringan kata kasar dan mengunggah postingan baru ke database."""
         user_id = current_user.id
         comunity_id = get_comunity_id()
         
@@ -99,8 +143,8 @@ def PostForm(parent, current_user, edit_post_data, on_submit):
             messagebox.showinfo(res["message"][0], res["message"][1])
             clear_post()
 
-    # Fungsi Simpan Update Edit Post
     def edit_post():
+        """Menyimpan pembaruan teks postingan lama ke database setelah disensor."""
         if not selected_post_id:
             messagebox.showerror("Error", "ID postingan tidak valid.")
             return
@@ -126,39 +170,43 @@ def PostForm(parent, current_user, edit_post_data, on_submit):
             messagebox.showinfo(res["message"][0], res["message"][1])
             clear_post()
 
-    # --- BTN CONTAINER ACTION ---
+    # BOTTOM ACTION BUTTONS CONTAINER
     btn_frame = tk.Frame(form_card, bg=bg_white)
-    btn_frame.pack(fill="x", pady=(15, 0))
+    btn_frame.pack(fill="x", side="top")
 
     if edit_post_data:
-        # Tampilan Tombol saat Mode Edit Terdeteksi
+        # Tombol aksi mode edit 
         btn_submit = tk.Button(
             btn_frame, text="Simpan Perubahan", command=edit_post,
-            font=("Poppins", 9, "bold"), bg="#4D65FF", fg=bg_white, relief="flat", padx=15, pady=5, cursor="hand2"
+            font=("Poppins", 9, "bold"), bg=text_dark, fg=bg_white, 
+            relief="flat", bd=0, padx=18, pady=6, cursor="hand2"
         )
-        btn_submit.pack(side="left", padx=(0, 10))
+        btn_submit.pack(side="right")
 
         btn_clear = tk.Button(
-            btn_frame, text="Batal / Cancel", command=clear_post,
-            font=("Poppins", 9), bg=border_col, fg=text_dark, relief="flat", padx=15, pady=5, cursor="hand2"
+            btn_frame, text="Batal", command=clear_post,
+            font=("Poppins", 9), bg=bg_main, fg=text_dark, 
+            relief="flat", bd=0, padx=18, pady=6, cursor="hand2"
         )
-        btn_clear.pack(side="left")
+        btn_clear.pack(side="right", padx=8)
         
-        # Mengisi otomatis nilai lama ke dalam form input edit
+        # Isian awal mode edit
         ent_contents.insert("1.0", edit_post_data.content)
         combo_comunity.set(edit_post_data.comunity_name)
     else:
-        # Tampilan Tombol saat Mode Create Normal
+        # Tombol aksi mode publish normal
         btn_submit = tk.Button(
-            btn_frame, text="Post Konten", command=tambah_post,
-            font=("Poppins", 9, "bold"), bg=bg_primary, fg=bg_white, relief="flat", padx=15, pady=5, cursor="hand2"
+            btn_frame, text="Buat Post", command=tambah_post,
+            font=("Poppins", 9, "bold"), bg=text_dark, fg=bg_white, 
+            relief="flat", bd=0, padx=18, pady=6, cursor="hand2"
         )
-        btn_submit.pack(side="left", padx=(0, 10))
+        btn_submit.pack(side="right")
 
         btn_clear = tk.Button(
-            btn_frame, text="Clear", command=clear_post,
-            font=("Poppins", 9), bg=border_col, fg=text_dark, relief="flat", padx=15, pady=5, cursor="hand2"
+            btn_frame, text="Reset", command=clear_post,
+            font=("Poppins", 9), bg=bg_white, fg=text_muted, 
+            relief="flat", bd=0, padx=12, pady=6, cursor="hand2"
         )
-        btn_clear.pack(side="left")
+        btn_clear.pack(side="right", padx=6)
             
     return form_card

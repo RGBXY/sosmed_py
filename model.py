@@ -9,6 +9,25 @@ class User:
     def convert(data):
         return User(data["id"], data["username"], data["password"], data["role"])
     
+class Comunity_Member:
+    def __init__(self, id, username, role, joined_at):
+        self.id = id
+        self.username = username
+        self.role = role
+        self.joined_at = joined_at
+
+    @staticmethod
+    def convert(data):
+        if not data:
+            return None
+            
+        return Comunity_Member(
+            id=data[0], 
+            username=data[1], 
+            role=data[2], 
+            joined_at=data[3]
+        )
+    
 class Comunity:
     def __init__(self, id, user_id, name, description):
         self.id = id

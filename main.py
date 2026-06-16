@@ -14,21 +14,25 @@ class Main(tk.Tk):
         super().__init__()
         self.state("zoomed")
         self.title("Hubble")
+        
+        # 1. Inisialisasi Database
         init_db()
 
+        # 2. Inisialisasi Logika Sensor (Otomatis mengisi cache badwords ke RAM saat init)
         self.sensor = Sensor_Logic()
 
+        # 3. Inisialisasi State Aplikasi
         self.current_user = None
         self.current_frame = None
 
-        self.open_login()
-        self.sensor.get_badwords_sensor_logic()
+        # 4. Pemicu Tampilan Pertama (Arahkan ke Login)
+        self.open_login()   
         
     # Routing Function
     def switch_frame(self, frame_class, **kwargs):
         """Menghancurkan frame yang aktif saat ini dan menggantinya dengan frame yang baru."""
         # Logika pergantian frame: Hapus instance lama dari memori untuk mencegah memory leak
-        if self.current_frame:
+        if self.current_frame:  
             self.current_frame.destroy()
 
         # Inisialisasi frame baru dengan melempar 'self' sebagai parent window dan argumen tambahan (**kwargs)
