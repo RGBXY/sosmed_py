@@ -127,7 +127,7 @@ class BadwordManagementFrame(tk.Frame):
     # =========================================================
     def refresh_table_data(self):
         """Menarik ulang list data kata terlarang dari backend untuk disinkronkan ke tabel UI."""
-        data = self.badword_backend.get_badwords_logic()
+        data = self.badword_backend.get_badwords_paginated_logic()
         self.load_data(data)
 
     def clear_form(self):

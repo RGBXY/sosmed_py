@@ -177,7 +177,7 @@ def CreatePostCard(parent, post_data, current_user, on_liked, on_delete_callback
         dialog = CustomEditDialog(root_window, "Edit Komentar", initial_value=old_content)
        
         new_content = sensor.sensor_teks(dialog.result, current_user.id)    
-        res = comment_backend.upadate_comment_logic(comment_id, new_content)
+        res = comment_backend.update_comment_logic(comment_id, new_content)
 
         if res["status"] == "Success":
             messagebox.showinfo(res["message"][0], res["message"][1])

@@ -155,7 +155,7 @@ class UserManagementFrame(tk.Frame):
         confirm_password = self.ent_confirm_password.get().strip()
         role = self.cb_role.get()
         
-        res = self.auth_backend.resgiter_admin_logic(username, password, role, confirm_password)
+        res = self.auth_backend.register_admin_logic(username, password, role, confirm_password)
 
         if res["status"] == "Error":
             messagebox.showerror(res["message"][0], res["message"][1])
@@ -178,7 +178,7 @@ class UserManagementFrame(tk.Frame):
             messagebox.showerror("Error", "Pilih user dari tabel terlebih dahulu!")
             return
             
-        res = self.auth_backend.edit_resgiter_admin_logic(id, username, password, role, confirm_password) 
+        res = self.auth_backend.edit_register_admin_logic(id, username, password, role, confirm_password) 
 
         if res["status"] == "Error":
             messagebox.showerror(res["message"][0], res["message"][1])

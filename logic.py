@@ -547,6 +547,10 @@ class Badword_Logic:
         res = get_badwords()
         return [Badwords.convert(row) for row in res]
     
+    def get_badwords_paginated_logic(self):
+        res = get_badwords_paginated()
+        return [Badwords.convert(row) for row in res]
+    
     def create_badword_logic(self, word):
         if not word or not word.strip():
             return {

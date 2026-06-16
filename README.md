@@ -402,7 +402,7 @@ posts
 
 ## 📌 Catatan Pengembangan
 
-Proyek ini dibuat sebagai bagian dari UAS Prinsip Pemrograman dan mengimplementasikan seluruh 9 modul yang dipelajari selama semester. Pendekatan MVC ringan digunakan untuk memisahkan tanggung jawab antara tampilan (gui.py), logika (logic.py), dan data (data.py).
+Proyek ini dibuat sebagai bagian dari UAS Prinsip Pemrograman dan mengimplementasikan seluruh 9 modul yang dipelajari selama semester. Pendekatan MVC ringan digunakan untuk memisahkan tanggung jawab antara tampilan (gui/), logika (logic.py), dan data (data.py).
 
 ---
 

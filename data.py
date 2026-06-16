@@ -279,6 +279,12 @@ def create_community(user_id, name, description):
         return {"status": "Error", "message": ("Gagal", "Data tidak boleh kosong!")}
         
     with get_db() as conn:
+
+        check = conn.execute("SELECT 1 FROM communities WHERE name=?", (name.strip(),)).fetchone()
+
+        if check:
+            return "name_exist"
+
         cursor = conn.execute("INSERT INTO communities (user_id, name, description) VALUES (?, ?, ?)", (user_id, name, description))
         new_id = cursor.lastrowid 
         conn.execute("INSERT INTO community_members (community_id, user_id) VALUES (?, ?)", (new_id, user_id))
@@ -578,6 +584,15 @@ def get_badwords():
     """Mengambil list kumpulan kata kasar."""
     with get_db() as conn:
         return conn.execute("SELECT * FROM badwords").fetchall()
+    
+def get_badwords_paginated(limit=10, offset=0):
+    with get_db() as conn:
+        return conn.execute("""
+            SELECT *
+            FROM badwords
+            ORDER BY id DESC
+            LIMIT ? OFFSET ?
+        """, (limit, offset)).fetchall()
 
 def create_badwords(word):
     """Mendaftarkan database blacklist kosakata kasar baru."""

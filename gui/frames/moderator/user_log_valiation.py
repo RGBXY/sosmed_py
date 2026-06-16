@@ -111,11 +111,6 @@ class ViolationsManagementFrame(tk.Frame):
                                  bg=bg_main, fg=text_dark, activebackground=border_col, activeforeground=text_dark,
                                  bd=0, relief="flat", cursor="hand2", command=self.refresh_dashboard)
         btn_refresh.pack(fill="x", pady=(0, 12), ipady=6)
-
-        btn_export = tk.Button(panel_card, text="📊   Export Logs to CSV", font=btn_font,
-                            bg=bg_secondary, fg=bg_white, activebackground=dark, activeforeground=bg_white,
-                            bd=0, relief="flat", cursor="hand2", command=self.export_to_csv)
-        btn_export.pack(fill="x", pady=(0, 12), ipady=6)
         
         btn_clear_logs = tk.Button(panel_card, text="🗑️   Clear Badword Logs", font=btn_font,
                                 bg=text_dark, fg=bg_white, activebackground=dark, activeforeground=bg_white,
@@ -146,10 +141,6 @@ class ViolationsManagementFrame(tk.Frame):
         self.selected_user_id = None
         self.selected_log_id = None
         self.btn_delete_account.config(state="disabled")
-
-    def export_to_csv(self):
-        """Mengekspor seluruh catatan riwayat log pelanggaran ke dalam format file dokumen CSV."""
-        messagebox.showinfo("Export", "Logs berhasil di-export ke CSV!")
 
     def clear_logs(self):
         """Membersihkan seluruh rekam data log riwayat pelanggaran kata dari sistem setelah dikonfirmasi."""
