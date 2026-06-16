@@ -190,48 +190,48 @@ def hash_password(password):
 
 def check_if_user_exist(conn, username):
     """Mengecek eksistensi username di dalam database."""
-    check = conn.execute("SELECT 1 FROM users WHERE username=?", (username,)).fetchone()
+    check = conn.execute("SELECT 1 FROM users WHERE username=?", (username.strip(),)).fetchone()
     return "username_exist" if check else False
 
 def login_user_auth(username, password):
     """Melakukan verifikasi login berdasarkan kesamaan kombinasi username & hash password."""
-    hashed = hash_password(password)
+    hashed = hash_password(password.strip())
     with get_db() as conn:
-        return conn.execute("SELECT * FROM users WHERE username=? AND password=?", (username, hashed)).fetchone()
+        return conn.execute("SELECT * FROM users WHERE username=? AND password=?", (username.strip(), hashed)).fetchone()
 
 def register_user_auth(username, password):
     """Mendaftarkan akun baru tingkat pengguna (user)."""
-    hashed = hash_password(password)
+    hashed = hash_password(password.strip())
     with get_db() as conn:
-        if check_if_user_exist(conn, username):
+        if check_if_user_exist(conn, username.strip()):
             return "username_exist"
         
-        conn.execute("INSERT INTO users (username, password, role) VALUES (?,?,?)", (username, hashed, "user"))
+        conn.execute("INSERT INTO users (username, password, role) VALUES (?,?,?)", (username.strip(), hashed, "user"))
         conn.commit()
         return conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
 
 def register_admin(username, password, role):
     """Mendaftarkan akun baru khusus untuk kebutuhan otoritas struktural (admin/moderator)."""
-    hashed = hash_password(password)
+    hashed = hash_password(password.strip())
     with get_db() as conn:
-        if check_if_user_exist(conn, username):
+        if check_if_user_exist(conn, username.strip()):
             return "username_exist"
-        conn.execute("INSERT INTO users (username, password, role) VALUES (?,?,?)", (username, hashed, role))
+        conn.execute("INSERT INTO users (username, password, role) VALUES (?,?,?)", (username.strip(), hashed, role))
         conn.commit()
         return True
 
 def edit_user(user_id, username, password, role):
     """Memperbarui informasi profile dan kredensial akses user berdasarkan ID."""
     with get_db() as conn:
-        duplicate = conn.execute("SELECT id FROM users WHERE username = ? AND id != ?", (username, user_id)).fetchone()
+        duplicate = conn.execute("SELECT id FROM users WHERE username = ? AND id != ?", (username.strip(), user_id)).fetchone()
         if duplicate:
             return "username_exist"
 
         if password and password.strip():
             hashed = hash_password(password)
-            conn.execute("UPDATE users SET username=?, password=?, role=? WHERE id=?", (username, hashed, role, user_id))
+            conn.execute("UPDATE users SET username=?, password=?, role=? WHERE id=?", (username.strip(), hashed, role, user_id))
         else:
-            conn.execute("UPDATE users SET username=?, role=? WHERE id=?", (username, role, user_id))
+            conn.execute("UPDATE users SET username=?, role=? WHERE id=?", (username.strip(), role, user_id))
         conn.commit()
         return True
 

@@ -68,7 +68,7 @@ class ComunityPostFrame(tk.Frame):
 
         # --- FEED SCOPE ---
         self.render_scrollable_area()
-        self.refresh_page_data()
+        self.handle_form_success()
 
     # =========================================================
     # METHOD LOGIC HANDLER
@@ -121,7 +121,7 @@ class ComunityPostFrame(tk.Frame):
             parent_frame=self,
             current_user=self.current_user,
             forced_community_id=self.comunity_id, 
-            on_submit_callback=self.refresh_page_data 
+            on_submit_callback=self.handle_form_success 
         )
 
     def handle_edit_post(self, post_data):
@@ -133,14 +133,14 @@ class ComunityPostFrame(tk.Frame):
             current_user=self.current_user,
             edit_post_data=post_data,
             forced_community_id=self.comunity_id,
-            on_submit_callback=self.refresh_page_data
+            on_submit_callback=self.handle_form_success
         )
 
     def open_members_list(self):
         """Memicu pembuatan jendela Toplevel baru untuk melihat profil seluruh member aktif grup ini."""
         CommunityMembersWindow(self, self.comunity_id, self.community_data)
 
-    def refresh_page_data(self):
+    def handle_form_success(self):
         """Menarik ulang data kiriman dari layer database dan memperbarui tumpukan kartu konten feed."""
         data = self.comunities.get_comunity_post_logic(self.comunity_id, self.current_user.id)
         self.load_cards(data)
@@ -157,7 +157,7 @@ class ComunityPostFrame(tk.Frame):
         if res["status"] == "Success":
             messagebox.showinfo(res["message"][0], res["message"][1])
             self.render_action_buttons()
-            self.refresh_page_data()
+            self.handle_form_success()
         else:
             messagebox.showerror(res["message"][0], res["message"][1])
 
@@ -209,13 +209,13 @@ class ComunityPostFrame(tk.Frame):
             res = self.posts.delete_post_logic(id)
             if res["status"] == "Success":
                 messagebox.showinfo(res["message"][0], res["message"][1])
-                self.refresh_page_data()
+                self.handle_form_success()
             else:
                 messagebox.showerror(res["message"][0], res["message"][1])
 
     def handle_refresh_likes(self):
         """Metode perantara callback event untuk menyegarkan tampilan status like."""
-        self.refresh_page_data()
+        self.handle_form_success()
 
 
 class CommunityMembersWindow(tk.Toplevel):
