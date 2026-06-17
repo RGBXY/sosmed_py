@@ -21,7 +21,7 @@ class Main(tk.Tk):
         # 2. Inisialisasi Logika Sensor (Otomatis mengisi cache badwords ke RAM saat init)
         self.sensor = Sensor_Logic()
 
-        # 3. Inisialisasi State Aplikasi
+        # 3. Inisialisasi State Aplikasi    
         self.current_user = None
         self.current_frame = None
 

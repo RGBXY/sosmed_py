@@ -27,7 +27,7 @@ class DashboardModeratorFrame(tk.Frame):
         self.current_user = current_user
         
         # Render Sidebar & Header bawaan proyek
-        render_role_sidebar(self, current_user, "Dashboard_Admin")
+        render_role_sidebar(self, current_user, "Dashboard_Moderator")
         main_header(self, current_user, "Dashboard")  
         
         # --- MAIN FRAME CONTAINER ---

@@ -468,7 +468,6 @@ class Comment_Logic:
                 "message": ("Success", "Data berhasil dihapus")
             }
         else:
-            # Perbaikan: Pesan error disesuaikan (sebelumnya: "Comment berhasil dibuat")
             return {
                 "status": "Error",
                 "message": ("Error","Data gagal dihapus")
@@ -630,7 +629,7 @@ class Sensor_Logic:
             return teks
             
         kata_kata = teks.split()
-        is_dirty = False  # Perbaikan: Menggunakan variabel lokal agar thread-safe
+        is_dirty = False  
         
         for i, kata in enumerate(kata_kata):
             kata_bersih = "".join(char for char in kata if char.isalnum()).lower()
